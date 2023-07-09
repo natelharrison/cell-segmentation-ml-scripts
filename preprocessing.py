@@ -107,13 +107,12 @@ def get_tiles(
             desc=f"Locating tiles: {[windows.shape[0]]}",
             bar_format='{l_bar}{bar}{r_bar} {elapsed_s:.1f}s elapsed',
             unit=' tile',
-    )
-    ):
+    )):
         tile = f"z{z}-y{y}-x{x}_{image_path.stem}"
         if i in test_indices:
             imwrite(test_path / f"{tile}.tif", windows[i])
-
-        imwrite(save_path / f"{tile}.tif", windows[i])
+        else:
+            imwrite(save_path / f"{tile}.tif", windows[i])
 
 
 def main():
