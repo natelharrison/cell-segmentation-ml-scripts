@@ -111,9 +111,9 @@ def get_tiles(
     ):
         tile = f"z{z}-y{y}-x{x}_{image_path.stem}"
         if i in test_indices:
-            imwrite(test_path, windows[i])
+            imwrite(test_path / f"{tile}.tif", windows[i])
 
-        imwrite(save_path, windows[i])
+        imwrite(save_path / f"{tile}.tif", windows[i])
 
 
 def main():
