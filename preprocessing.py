@@ -18,7 +18,7 @@ parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--test_size', type=int, default=0)
 parser.add_argument('--crop_size', type=int, nargs="+", default=(1, 64, 64))
 parser.add_argument('--strides', type=int, nargs="+", default=None)
-parser.add_argument('--save_file', type=str, default="processed")
+parser.add_argument('--save_name', type=str, default="processed")
 parser.add_argument('--split', type=bool, default=False)
 args = parser.parse_args()
 
