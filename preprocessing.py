@@ -100,7 +100,7 @@ def get_tiles(
     test_count = int(len(windows) * test_size)
 
     np.random.seed(seed)
-    test_indices = np.random.randint(0, len(windows), test_count)
+    test_indices = np.random.choice(len(windows), test_count, replace=False)
 
     for i, (z, y, x) in enumerate(itertools.product(
             range(z_tiles), range(n_rows), range(n_cols),
