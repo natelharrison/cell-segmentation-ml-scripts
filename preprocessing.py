@@ -84,10 +84,10 @@ def get_tiles(
         z_len, y_len, x_len = image.shape
         window_size = (z_len//6,
                        y_len,
-                       x_len)
+                       x_len//2)
         strides = (z_len//6 - 1,
                    y_len,
-                   x_len)
+                   x_len//2 - 1)
 
         print(image.shape)
         print(window_size)
