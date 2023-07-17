@@ -16,11 +16,13 @@ def main():
     image = imread(file_path.as_posix())
     image = image.flatten()
 
-    _, counts = np.unique(image, return_counts=True)
+    unique, counts = np.unique(image, return_counts=True)
 
-    image = np.sort(image)
+    # Pair each unique pixel value with its count and sort by count
+    cell_sizes = sorted(zip(unique, counts), key=lambda x: x[1])
 
+    # Print the 10 smallest cell sizes
     for i in range(10):
-        print(image[i], "\n")
+        print(f"Cell value: {cell_sizes[i][0]}, Size in pixels: {cell_sizes[i][1]}")
 
 main()
