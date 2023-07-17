@@ -21,8 +21,8 @@ def load_cellpose_modelpath(model_path: Path,
 
     # load cellpose model
     print('Loading Cellpose Models from folder ...')
-
     model = models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
+    print(f"Loaded {model_path.stem}")
 
     return model
 
@@ -58,7 +58,7 @@ channels = [[0,0]]
 masks, flows, styles = model.eval(image,
                                   do_3D=True,
                                   progress=True,
-                                  min_size=1000,
+                                  min_size=4000,
                                   channels=channels)
 io.save_masks(images=image,
               masks=masks,
