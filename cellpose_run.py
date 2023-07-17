@@ -56,7 +56,7 @@ channels = [[0,0]]
 
 masks, flows, styles, diams = model.eval(image,
                                          do_3D=True,
-                                         batch_size=32,
+                                         batch_size=16,
                                          progress=True,
                                          min_size=1000,
                                          channels=channels)
