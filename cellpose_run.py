@@ -9,7 +9,7 @@ from cellpose.io import imread
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
-parser.add_argument('--image_dir', type=str, default='')
+parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
 args = parser.parse_args()
 
@@ -25,7 +25,7 @@ file_name = file_path.stem
 file = file_path.as_posix()
 
 save_dir = file_path.parent / "predictions"
-os.mkdir(save_dir)
+os.makedirs(save_dir, exist_ok=True)
 save_dir = save_dir.as_posix()
 
 image = imread(file)
