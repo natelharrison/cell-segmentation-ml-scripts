@@ -14,6 +14,7 @@ def main():
     file_path = Path(args.image_path)
 
     image = imread(file_path.as_posix())
+    image = image.flatten()
 
     _, counts = np.unique(image, return_counts=True)
 
