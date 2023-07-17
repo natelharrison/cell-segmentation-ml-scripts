@@ -14,8 +14,8 @@ args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
 
-# model_type='cyto' or 'nuclei' or 'cyto2'
 
+# model_type='cyto' or 'nuclei' or 'cyto2'
 def load_cellpose_modelpath(model_path: Path,
                             gpu: bool = True) -> models.CellposeModel:
 
@@ -35,7 +35,7 @@ file_path = Path(args.image_path)
 file_name = file_path.stem
 file = file_path.as_posix()
 
-save_dir = file_path.parent / "predictions"
+save_dir = file_path.parent / f"{model_path.stem}_predictions"
 os.makedirs(save_dir, exist_ok=True)
 save_dir = save_dir.as_posix()
 
