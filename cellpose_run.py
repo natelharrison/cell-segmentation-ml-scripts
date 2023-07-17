@@ -21,7 +21,7 @@ def load_cellpose_modelpath(model_path: Path,
     # load cellpose model
     print('Loading Cellpose Models from folder ...')
 
-    model = models.CellposeModel(gpu=gpu, pretrained_model=model_path)
+    model = models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
 
     return model
 
