@@ -15,8 +15,18 @@ args = parser.parse_args()
 
 # model_type='cyto' or 'nuclei' or 'cyto2'
 
-model_arg = args.model
-model = models.Cellpose(gpu=True, model_type=model_arg)
+def load_cellpose_modelpath(model_path: Path,
+                            gpu: bool = True) -> models.CellposeModel:
+
+    # load cellpose model
+    print('Loading Cellpose Models from folder ...')
+
+    model = models.CellposeModel(gpu=gpu, pretrained_model=model_path)
+
+    return model
+
+model_path = Path(args.model)
+model = load_cellpose_modelpath(model_path)
 
 # list of files
 # PUT PATH TO YOUR FILES HERE!
@@ -46,6 +56,7 @@ channels = [[0,0]]
 
 masks, flows, styles, diams = model.eval(image,
                                          do_3D=True,
+                                         batch_size=32,
                                          progress=True,
                                          min_size=1000,
                                          channels=channels)
