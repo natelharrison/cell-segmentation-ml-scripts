@@ -23,7 +23,7 @@ channels = [[0,0]]
 # channels = [2,3] # IF YOU HAVE G=cytoplasm and B=nucleus
 # channels = [2,1] # IF YOU HAVE G=cytoplasm and R=nucleus
 
-# if diameter is set to None, the size of the cells is estimated on a per image basis
+# if diameter is set to None, the size of the cells is estimated on a per-image basis
 # you can set the average cell `diameter` in pixels yourself (recommended)
 # diameter can be a list or a single number for all images
 
