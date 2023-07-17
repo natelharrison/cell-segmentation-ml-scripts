@@ -1,8 +1,7 @@
 import os
 import argparse
 from pathlib import Path
-import numpy as np
-import matplotlib.pyplot as plt
+import logging
 from cellpose import models, io
 from cellpose.io import imread
 
@@ -12,6 +11,8 @@ parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
 args = parser.parse_args()
+
+logging.basicConfig(level=logging.INFO)
 
 # model_type='cyto' or 'nuclei' or 'cyto2'
 
@@ -54,11 +55,11 @@ channels = [[0,0]]
 # you can set the average cell `diameter` in pixels yourself (recommended)
 # diameter can be a list or a single number for all images
 
-masks, flows, styles, diams = model.eval(image,
-                                         do_3D=True,
-                                         progress=True,
-                                         min_size=1000,
-                                         channels=channels)
+masks, flows, styles = model.eval(image,
+                                  do_3D=True,
+                                  progress=True,
+                                  min_size=1000,
+                                  channels=channels)
 io.save_masks(images=image,
               masks=masks,
               flows=flows,
