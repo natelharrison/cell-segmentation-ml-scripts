@@ -19,7 +19,6 @@ parser.add_argument('--test_size', type=float, default=0)
 parser.add_argument('--crop_size', type=int, nargs="+", default=(1, 64, 64))
 parser.add_argument('--strides', type=int, nargs="+", default=None)
 parser.add_argument('--save_name', type=str, default="processed")
-parser.add_argument('--split', type=bool, default=False)
 args = parser.parse_args()
 
 logger = logging.getLogger(__name__)
@@ -65,11 +64,24 @@ def get_tiles(
         test_size: int,
         window_size: tuple,
         strides: tuple,
-        split: bool,
-        seed: int = 42
-):
+        seed: int = 42):
+    """
+    This function takes an image and splits it into smaller tiles, saving the tiles to specified directories.
 
-    masks = '_masks' if ('_mask' or '_masks') in image_path.stem else ''
+    Parameters:
+    - image_path: Path to the input image.
+    - save_path: Path to the directory where the tiles will be saved.
+    - test_path: Path to the directory where the test tiles will be saved.
+    - test_size: The proportion of tiles to be used for testing. This should be a float between 0 and 1.
+    - window_size: The size of the tiles. This should be a tuple of three integers.
+    - strides: The strides to use when splitting the image into tiles. This should be a tuple of three integers.
+    - split: Whether to split the image into six equal parts before tiling.
+    - seed: Seed for the random number generator. This is used when selecting the test tiles.
+
+    The function reads the image from the specified path, splits it into tiles of the specified size, and saves the tiles to the specified directories. The tiles are saved in TIFF format. The function also supports splitting the image into six equal parts before tiling, which can be useful for large images.
+
+    Note: This function assumes that the input image is a 3D image stored in a TIFF file.
+    """
 
     if image_path.suffix == '.tif':
         image = imread(image_path.as_posix())
@@ -79,19 +91,6 @@ def get_tiles(
 
     if strides is None:
         strides = window_size
-
-    if split:
-        z_len, y_len, x_len = image.shape
-        window_size = (z_len//6,
-                       y_len,
-                       x_len//2)
-        strides = (z_len//6 - 1,
-                   y_len,
-                   x_len//2 - 1)
-
-        print(image.shape)
-        print(window_size)
-        print(strides)
 
     windows = sliding_window_view(image, window_shape=window_size)[::strides[0], ::strides[1], ::strides[2]]
     z_tiles, n_rows, n_cols = windows.shape[:3]
@@ -122,7 +121,6 @@ def main():
     test_size = args.test_size
     window_size = args.crop_size
     strides = args.strides
-    split = args.split
 
     # Create save directory
     dir = Path(args.dir)
@@ -148,7 +146,6 @@ def main():
                   test_size,
                   window_size,
                   strides,
-                  split,
                   seed)
 
     # End timer and print execution time
