@@ -61,7 +61,7 @@ def get_tiles(
         image_path: Path,
         save_path: Path,
         test_path: Path,
-        test_size: int,
+        test_size: float,
         window_size: tuple,
         strides: tuple,
         seed: int = 42):
@@ -72,15 +72,11 @@ def get_tiles(
     - image_path: Path to the input image.
     - save_path: Path to the directory where the tiles will be saved.
     - test_path: Path to the directory where the test tiles will be saved.
-    - test_size: The proportion of tiles to be used for testing. This should be a float between 0 and 1.
-    - window_size: The size of the tiles. This should be a tuple of three integers.
-    - strides: The strides to use when splitting the image into tiles. This should be a tuple of three integers.
+    - test_size: The proportion of tiles to be used for testing.
+    - window_size: The size of the tiles.
+    - strides: The strides to use when splitting the image into tiles.
     - split: Whether to split the image into six equal parts before tiling.
     - seed: Seed for the random number generator. This is used when selecting the test tiles.
-
-    The function reads the image from the specified path, splits it into tiles of the specified size, and saves the tiles to the specified directories. The tiles are saved in TIFF format. The function also supports splitting the image into six equal parts before tiling, which can be useful for large images.
-
-    Note: This function assumes that the input image is a 3D image stored in a TIFF file.
     """
 
     if image_path.suffix == '.tif':
