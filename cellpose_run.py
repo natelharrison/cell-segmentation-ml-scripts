@@ -63,6 +63,11 @@ def model_predictions(
     Returns:
     None
     """
+    log_filename = os.path.join(save_dir, f"{file_name}_log")
+    logging.basicConfig(filename=log_filename, level=logging.INFO)
+
+    logging.info(f"Running model on image {file_name} with channels {channels} and kwargs {kwargs}")
+
     masks, flows, styles = model.eval(
         image,
         progress=True,
