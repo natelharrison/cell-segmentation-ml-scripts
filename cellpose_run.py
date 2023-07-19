@@ -1,7 +1,9 @@
 import os
-import argparse
-from pathlib import Path
 import logging
+import argparse
+import multiprocessing
+
+from pathlib import Path
 from cellpose import models, io
 from cellpose.io import imread
 
