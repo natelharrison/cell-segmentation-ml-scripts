@@ -108,6 +108,10 @@ def main():
 
     channels = [[0,0]]  # define channels to run segmentation on
 
+    kwargs_list = [
+
+    ]
+
     model_predictions(
         model,
         image,

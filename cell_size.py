@@ -18,11 +18,18 @@ def main():
 
     unique, counts = np.unique(image, return_counts=True)
 
-    # Pair each unique pixel value with its count and sort by count
-    cell_sizes = sorted(zip(unique, counts), key=lambda x: x[1])
+    lower_percentile = np.percentile(counts, 25)
+    upper_percentile = np.percentile(counts, 75)
 
-    # Print the 10 smallest cell sizes
+    mask = (counts >= lower_percentile) & (counts <= upper_percentile)
+    iqr_counts = counts[mask]
+
+    avg_cell_size = np.cbrt(np.mean(iqr_counts))
+    print(f"Average cell size in diameter (excluding outliers): {avg_cell_size}")
+
+    cell_sizes_iqr = sorted(zip(unique[mask], iqr_counts), key=lambda x: x[1])
     for i in range(10):
-        print(f"Cell value: {cell_sizes[i][0]}, Size in pixels: {cell_sizes[i][1]}")
+        print(f"Cell value: {cell_sizes_iqr[i][0]}, Size in pixels: {cell_sizes_iqr[i][1]}")
 
 main()
+
