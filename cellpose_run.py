@@ -116,3 +116,5 @@ def main():
         save_dir
     )
 
+main()
+
