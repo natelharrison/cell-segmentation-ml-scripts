@@ -10,13 +10,36 @@ parser.add_argument('--model', type=str, default='cyto2')
 args = parser.parse_args()
 
 # Define your list of kwargs here
-kwargs_list = [
-    {"diameter": 0, "do_3D": True},
-    {"diameter": 64, "do_3D": True},
-    {"diameter": 58, "do_3D": True},
-    {"diameter": 30, "do_3D": True},
+# 3D settings
+kwargs_list_3D = [
+    {"diameter": 0, "do_3D": True, "resample": True},
+    {"diameter": 64, "do_3D": True, "resample": True},
+    {"diameter": 58, "do_3D": True, "resample": True},
+    {"diameter": 30, "do_3D": True, "resample": True},
+    {"diameter": 0, "do_3D": True, "resample": False},
+    {"diameter": 64, "do_3D": True, "resample": False},
+    {"diameter": 58, "do_3D": True, "resample": False},
+    {"diameter": 30, "do_3D": True, "resample": False},
+    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 4000},
+    {"diameter": 64, "do_3D": True, "resample": True, "min_size": 4000},
+    {"diameter": 58, "do_3D": True, "resample": True, "min_size": 4000},
+    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 4000},
+]
 
-    # Add more kwargs dictionaries here as needed
+# 2D settings
+kwargs_list_2D = [
+    {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 0, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 64, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 58, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
 ]
 
 
