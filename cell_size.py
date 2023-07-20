@@ -31,5 +31,11 @@ def main():
     for i in range(10):
         print(f"Cell value: {cell_sizes_iqr[i][0]}, Size in pixels: {cell_sizes_iqr[i][1]}")
 
+    cell_sizes = sorted(zip(unique, counts), key=lambda x: x[1])
+    print("\nMinimum cell sizes including outliers:")
+    for i in range(10):
+        print(f"Cell value: {cell_sizes[i][0]}, Size in pixels: {cell_sizes[i][1]}")
+
 main()
+
 
