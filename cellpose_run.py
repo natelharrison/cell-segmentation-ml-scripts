@@ -1,10 +1,7 @@
 import os
-import ast
-import logging
 import argparse
-import numpy as np
-
 from pathlib import Path
+import logging
 from cellpose import models, io
 from cellpose.io import imread
 
@@ -13,129 +10,62 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
-parser.add_argument('--kwargs', type=str, default='{}')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
 
 
 # model_type='cyto' or 'nuclei' or 'cyto2'
-def load_model(
-        model_path: Path,
-        gpu: bool = True
-) -> models.CellposeModel:
-    """
-    Load a Cellpose model from a given path.
+def load_cellpose_modelpath(model_path: Path,
+                            gpu: bool = True) -> models.CellposeModel:
 
-    Parameters:
-    model_path (Path): Path to the pretrained model.
-    gpu (bool): If True, use GPU for model prediction. Default is True.
-
-    Returns:
-    models.CellposeModel: The loaded Cellpose model.
-    """
     # load cellpose model
     print('Loading Cellpose Models from folder ...')
-    model = models.CellposeModel(
-        gpu=gpu,
-        pretrained_model=model_path.as_posix()
-    )
+    model = models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
     print(f"Loaded {model_path.stem}")
 
     return model
 
+model_path = Path(args.model)
+model = load_cellpose_modelpath(model_path)
 
-def model_predictions(
-        model,
-        image,
-        file_name,
-        channels,
-        save_dir,
-        **kwargs
-):
-    """
-    Run a Cellpose model on an image and save the results.
+# list of files
+# PUT PATH TO YOUR FILES HERE!
+file_path = Path(args.image_path)
+file_name = file_path.stem
+file = file_path.as_posix()
 
-    Parameters:
-    model (models.CellposeModel): The Cellpose model to use for prediction.
-    image (np.ndarray): The image to run the model on.
-    file_name (str): The name of the file to save the results to.
-    channels (list): List of channels to run segmentation on.
-    save_dir (str): The directory where the results will be saved.
-    **kwargs: Additional parameters to pass to the model's eval method.
+save_dir = file_path.parent / f"{model_path.stem}_predictions"
+os.makedirs(save_dir, exist_ok=True)
+save_dir = save_dir.as_posix()
 
-    Returns:
-    None
-    """
-    # log_filename = os.path.join(save_dir, f"{file_name}_log")
-    # logging.basicConfig(filename=log_filename, level=logging.INFO)
-    #
-    # logging.info(f"Running model on image {file_name} with channels {channels} and kwargs {kwargs}")
+image = imread(file)
 
-    logging.info(np.unique(image))
-    try:
-        masks, flows, styles = model.eval(
-            image,
-            progress=True,
-            channels=channels,
-            diameter=50,
-            min_size=1000
-        )
-        logging.info(np.unique(masks))
-    except Exception as e:
-        logging.error(f"Error during model evaluation: {e}")
-        return
+# define CHANNELS to run segmentation on
+# grayscale=0, R=1, G=2, B=3
+# channels = [cytoplasm, nucleus]
+# if NUCLEUS channel does not exist, set the second channel to 0
+channels = [[0,0]]
+# IF ALL YOUR IMAGES ARE THE SAME TYPE, you can give a list with 2 elements
+# channels = [0,0] # IF YOU HAVE GRAYSCALE
+# channels = [2,3] # IF YOU HAVE G=cytoplasm and B=nucleus
+# channels = [2,1] # IF YOU HAVE G=cytoplasm and R=nucleus
 
-    try:
-        io.save_masks(
-            images=image,
-            masks=masks,
-            flows=flows,
-            file_names=file_name,
-            png=False,
-            tif=True,
-            channels=channels,
-            savedir=save_dir
-        )
-        logging.info("Masks saved successfully.")
-    except Exception as e:
-        logging.error(f"Error during saving masks: {e}")
+# if diameter is set to None, the size of the cells is estimated on a per-image basis
+# you can set the average cell `diameter` in pixels yourself (recommended)
+# diameter can be a list or a single number for all images
 
-
-
-def main():
-    """
-    Main function to run the script. It loads the model, reads the image, and runs the model prediction.
-    The results are saved in the specified directory.
-    """
-    model_path = Path(args.model)
-    model = load_model(model_path)
-
-    file_path = Path(args.image_path)
-    file_name = file_path.stem
-    file = file_path.as_posix()
-
-    save_dir = file_path.parent / f"{model_path.stem}_predictions"
-    os.makedirs(save_dir, exist_ok=True)
-    save_dir = save_dir.as_posix()
-
-    image = imread(file)
-
-    channels = [[0,0]]  # define channels to run segmentation on
-
-    kwargs = ast.literal_eval(args.kwargs)
-
-    logging.info("Starting model predictions...")
-    model_predictions(
-        model,
-        image,
-        file_name,
-        channels,
-        save_dir,
-        **kwargs
-    )
-    logging.info("Finished model predictions.")
-
-
-main()
-
+masks, flows, styles = model.eval(image,
+                                  do_3D=True,
+                                  resample=True,
+                                  progress=True,
+                                  min_size=4000,
+                                  channels=channels)
+io.save_masks(images=image,
+              masks=masks,
+              flows=flows,
+              file_names=file_name,
+              png=False,
+              tif=True,
+              channels=channels,
+              savedir=save_dir)
