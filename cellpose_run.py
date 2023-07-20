@@ -23,9 +23,7 @@ def load_model(
         gpu: bool = True
 ) -> models.CellposeModel:
 
-    model = models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
-
-    return model
+    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
 
 
 def main():

@@ -11,7 +11,11 @@ args = parser.parse_args()
 
 # Define your list of kwargs here
 kwargs_list = [
-    {"diameter": 60, "min_size": 1000},
+    {"diameter": 0, "do_3D": True},
+    {"diameter": 64, "do_3D": True},
+    {"diameter": 58, "do_3D": True},
+    {"diameter": 30, "do_3D": True},
+
     # Add more kwargs dictionaries here as needed
 ]
 
