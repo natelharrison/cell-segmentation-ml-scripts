@@ -18,8 +18,8 @@ kwargs_list = [
 
 dir = Path.cwd()
 user_dir = dir.parent
-image_path = args.image
-model_path = args.model
+image_path = Path(args.image)
+model_path = Path(args.model)
 
 for kwargs in kwargs_list:
     # Convert kwargs dictionary to a string
