@@ -46,6 +46,7 @@ kwargs_list = [
 dir = Path.cwd()
 user_dir = dir.parent
 save_dir = user_dir/'cellpose_run'/'mass_batch'
+log_dir = user_dir/'cellpose_run'/'logs'
 
 image_path = Path(args.image)
 model_path = Path(args.model)
@@ -57,7 +58,7 @@ for i, kwargs in enumerate(kwargs_list):
 
     # Create the batch script
     batch_name = f'batch_{i}_{image_path.stem}'
-    log_output = dir/'logs'/f'{batch_name}.log'
+    log_output = log_dir/f'{batch_name}.log'
 
 
     # Rest of your script...
