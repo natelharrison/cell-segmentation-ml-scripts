@@ -71,22 +71,33 @@ def model_predictions(
 
     logging.info(f"Running model on image {file_name} with channels {channels} and kwargs {kwargs}")
 
-    masks, flows, styles = model.eval(
-        image,
-        progress=True,
-        channels=channels,
-        **kwargs
-    )
-    io.save_masks(
-        images=image,
-        masks=masks,
-        flows=flows,
-        file_names=file_name,
-        png=False,
-        tif=True,
-        channels=channels,
-        savedir=save_dir
-    )
+    try:
+        masks, flows, styles = model.eval(
+            image,
+            progress=True,
+            channels=channels,
+            **kwargs
+        )
+        logging.info("Model evaluation completed successfully.")
+    except Exception as e:
+        logging.error(f"Error during model evaluation: {e}")
+        return
+
+    try:
+        io.save_masks(
+            images=image,
+            masks=masks,
+            flows=flows,
+            file_names=file_name,
+            png=False,
+            tif=True,
+            channels=channels,
+            savedir=save_dir
+        )
+        logging.info("Masks saved successfully.")
+    except Exception as e:
+        logging.error(f"Error during saving masks: {e}")
+
 
 
 def main():
