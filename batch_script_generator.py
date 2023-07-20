@@ -30,8 +30,7 @@ for kwargs in kwargs_list:
     log_output = dir/'logs'/batch_name
 
 
-    batch_script = f"""
-#!/bin/sh
+    batch_script = f"""#!/bin/sh
 #SBATCH --qos=abc_normal
 #SBATCH --gres=gpu:1
 #SBATCH --partition=abc
