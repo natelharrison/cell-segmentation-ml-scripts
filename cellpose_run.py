@@ -58,7 +58,7 @@ channels = [[0,0]]
 # diameter can be a list or a single number for all images
 
 kwargs = ast.literal_eval(args.kwargs)
-kwargs = {"diameter": 60, "min_size": 4000}
+kwargs = {"diameter": 60, "min_size": 4000, "do_3D":False}
 
 masks, flows, styles = model.eval(image,
                                   do_3D=True,
