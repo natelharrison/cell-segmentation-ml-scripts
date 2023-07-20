@@ -79,7 +79,7 @@ def model_predictions(
             diameter=50,
             min_size=1000
         )
-        logging.info("Model evaluation completed successfully.")
+        logging.info(masks)
     except Exception as e:
         logging.error(f"Error during model evaluation: {e}")
         return
