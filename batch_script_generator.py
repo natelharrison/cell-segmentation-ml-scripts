@@ -81,10 +81,11 @@ conda activate cellpose
 python cellpose_run.py --image_path {image_path} --model {model_path} --kwargs '{kwargs_str}' """
 
     # Save the batch script to a file
-    with open(f'{save_dir}{batch_name}.sh', "w") as file:
+    with open(save_dir / f'{batch_name}.sh', "w") as file:
         file.write(batch_script)
 
     # Run the batch script
-    subprocess.run(["sbatch", f"{batch_name}.sh"])
+    subprocess.run(["sbatch", (save_dir / f"{batch_name}.sh").as_posix()])
+
 
 
