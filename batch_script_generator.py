@@ -21,15 +21,15 @@ user_dir = dir.parent
 image_path = Path(args.image)
 model_path = Path(args.model)
 
-for kwargs in kwargs_list:
+for i, kwargs in enumerate(kwargs_list):
     # Convert kwargs dictionary to a string
     kwargs_str = json.dumps(kwargs)
 
     # Create the batch script
-    batch_name = f'{kwargs_str}_{image_path.stem}.log'
-    log_output = dir/'logs'/batch_name
+    batch_name = f'batch_{i}_{image_path.stem}'
+    log_output = dir/'logs'/f'{batch_name}.log'
 
-
+    # Rest of your script...
     batch_script = f"""#!/bin/sh
 #SBATCH --qos=abc_normal
 #SBATCH --gres=gpu:1
