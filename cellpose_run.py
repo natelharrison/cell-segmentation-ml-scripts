@@ -47,8 +47,6 @@ def main():
 
     masks, flows, styles = model.eval(
         image,
-        do_3D=True,
-        resample=True,
         progress=True,
         channels=channels,
         **kwargs
@@ -60,6 +58,7 @@ def main():
         file_names=file_name,
         png=False,
         tif=True,
+        save_txt=False,
         channels=channels,
         savedir=save_dir
     )
