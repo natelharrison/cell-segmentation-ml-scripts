@@ -1,7 +1,7 @@
 import os
+import ast
 import logging
 import argparse
-import multiprocessing
 
 from pathlib import Path
 from cellpose import models, io
@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
+parser.add_argument('--kwargs', type=str, default='{}')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
@@ -108,16 +109,15 @@ def main():
 
     channels = [[0,0]]  # define channels to run segmentation on
 
-    kwargs_list = [
-
-    ]
+    kwargs = ast.literal_eval(args.kwargs)
 
     model_predictions(
         model,
         image,
         file_name,
         channels,
-        save_dir
+        save_dir,
+        **kwargs
     )
 
 main()
