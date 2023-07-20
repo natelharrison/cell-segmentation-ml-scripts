@@ -111,6 +111,7 @@ def main():
 
     kwargs = ast.literal_eval(args.kwargs)
 
+    logging.info("Starting model predictions...")
     model_predictions(
         model,
         image,
@@ -119,6 +120,8 @@ def main():
         save_dir,
         **kwargs
     )
+    logging.info("Finished model predictions.")
+
 
 main()
 
