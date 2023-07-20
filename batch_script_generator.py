@@ -53,7 +53,6 @@ model_path = Path(args.model)
 
 for i, kwargs in enumerate(kwargs_list):
     # Convert kwargs dictionary to a string
-    print(type(image_path))
     savedir_name = f"batch_{i}"
     kwargs_str = json.dumps(kwargs)
 

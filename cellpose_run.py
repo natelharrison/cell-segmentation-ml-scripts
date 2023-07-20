@@ -1,6 +1,7 @@
 import ast
 import os
 import argparse
+import json
 from pathlib import Path
 import logging
 from cellpose import models, io
@@ -44,7 +45,12 @@ def main():
 
     channels = [[0,0]]
     image = imread(file)
-    kwargs = ast.literal_eval(args.kwargs)
+
+    try:
+        kwargs = json.loads(args.kwargs)
+    except ValueError as e:
+        print(f"Error parsing kwargs: {args.kwargs}")
+        raise e
 
     logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
