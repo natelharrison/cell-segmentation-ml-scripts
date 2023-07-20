@@ -28,18 +28,18 @@ kwargs_list = [
     {"diameter": 30, "do_3D": True, "resample": True, "min_size": 4000},
 
     #2D
-    # {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 0, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 64, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 58, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
-    # {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
-    # {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
-    # {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
-    # {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 0, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 64, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 58, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
+    {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
+    {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.2, "flow_threshold": 0.6, "stitch_threshold": 0.2},
 ]
 
 
