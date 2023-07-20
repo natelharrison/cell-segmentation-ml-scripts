@@ -12,6 +12,7 @@ parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
 parser.add_argument('--kwargs', type=str, default='{}')
+parser.add_argument('--save_name', type=str, default=None)
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +37,8 @@ def main():
     file = file_path.as_posix()
 
     save_dir = file_path.parent / f"{model_path.stem}_predictions"
+    if args.save_name:
+        save_dir = save_dir / args.save_name
     os.makedirs(save_dir, exist_ok=True)
     save_dir = save_dir.as_posix()
 
