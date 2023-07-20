@@ -72,6 +72,7 @@ def model_predictions(
     #
     # logging.info(f"Running model on image {file_name} with channels {channels} and kwargs {kwargs}")
 
+    logging.info(np.unique(image))
     try:
         masks, flows, styles = model.eval(
             image,
