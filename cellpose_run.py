@@ -43,6 +43,8 @@ def main():
     image = imread(file)
     kwargs = ast.literal_eval(args.kwargs)
 
+    logging.info(f"Running cellpose with following kwargs: {kwargs}")
+
     masks, flows, styles = model.eval(
         image,
         progress=True,
