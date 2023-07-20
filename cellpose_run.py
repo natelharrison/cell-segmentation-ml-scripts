@@ -76,7 +76,6 @@ def model_predictions(
             image,
             progress=True,
             channels=channels,
-            **kwargs
         )
         logging.info("Model evaluation completed successfully.")
     except Exception as e:
