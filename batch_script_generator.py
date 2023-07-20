@@ -11,7 +11,8 @@ args = parser.parse_args()
 
 # Define your list of kwargs here
 # 3D settings
-kwargs_list_3D = [
+kwargs_list = [
+    #3D
     {"diameter": 0, "do_3D": True, "resample": True},
     {"diameter": 64, "do_3D": True, "resample": True},
     {"diameter": 58, "do_3D": True, "resample": True},
@@ -24,10 +25,8 @@ kwargs_list_3D = [
     {"diameter": 64, "do_3D": True, "resample": True, "min_size": 4000},
     {"diameter": 58, "do_3D": True, "resample": True, "min_size": 4000},
     {"diameter": 30, "do_3D": True, "resample": True, "min_size": 4000},
-]
 
-# 2D settings
-kwargs_list_2D = [
+    #2D
     {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
     {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
     {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.0},
