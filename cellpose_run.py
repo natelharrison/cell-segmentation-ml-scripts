@@ -76,6 +76,8 @@ def model_predictions(
             image,
             progress=True,
             channels=channels,
+            diameter=50,
+            min_size=1000
         )
         logging.info("Model evaluation completed successfully.")
     except Exception as e:
