@@ -2,6 +2,7 @@ import os
 import ast
 import logging
 import argparse
+import numpy as np
 
 from pathlib import Path
 from cellpose import models, io
@@ -79,7 +80,7 @@ def model_predictions(
             diameter=50,
             min_size=1000
         )
-        logging.info(masks)
+        logging.info(np.unique(masks))
     except Exception as e:
         logging.error(f"Error during model evaluation: {e}")
         return
