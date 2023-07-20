@@ -31,23 +31,23 @@ for kwargs in kwargs_list:
 
 
     batch_script = f"""
-    #!/bin/sh
-    #SBATCH --qos=abc_normal
-    #SBATCH --gres=gpu:1
-    #SBATCH --partition=abc
-    #SBATCH --account=co_abc
-    #SBATCH --nodes=1
-    #SBATCH --time=8:00:00
-    #SBATCH --ntasks=5
-    #SBATCH --mem=125G
-    #SBATCH --output={log_output}
-    #SBATCH --export=ALL
+#!/bin/sh
+#SBATCH --qos=abc_normal
+#SBATCH --gres=gpu:1
+#SBATCH --partition=abc
+#SBATCH --account=co_abc
+#SBATCH --nodes=1
+#SBATCH --time=8:00:00
+#SBATCH --ntasks=5
+#SBATCH --mem=125G
+#SBATCH --output={log_output}
+#SBATCH --export=ALL
 
-    ### Run your command
-    . {user_dir}/anaconda3/etc/profile.d/conda.sh
-    conda activate cellpose
+### Run your command
+. {user_dir}/anaconda3/etc/profile.d/conda.sh
+conda activate cellpose
 
-    python cellpose_run.py --image_path {image_path} --add_model {model_path} --kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --add_model {model_path} --kwargs '{kwargs_str}' """
 
     # Save the batch script to a file
     with open(f'{batch_name}.sh', "w") as file:
