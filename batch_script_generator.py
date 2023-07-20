@@ -1,6 +1,7 @@
 import argparse
 import subprocess
 import json
+import os
 
 from pathlib import Path
 
@@ -44,6 +45,8 @@ kwargs_list = [
 
 dir = Path.cwd()
 user_dir = dir.parent
+save_dir = user_dir/'cellpose_run'/'mass_batch'
+
 image_path = Path(args.image)
 model_path = Path(args.model)
 
@@ -77,7 +80,7 @@ conda activate cellpose
 python cellpose_run.py --image_path {image_path} --model {model_path} --kwargs '{kwargs_str}' """
 
     # Save the batch script to a file
-    with open(f'{batch_name}.sh', "w") as file:
+    with open(f'{save_dir}{batch_name}.sh', "w") as file:
         file.write(batch_script)
 
     # Run the batch script
