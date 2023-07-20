@@ -1,3 +1,4 @@
+import ast
 import os
 import argparse
 from pathlib import Path
@@ -10,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
+parser.add_argument('--kwargs', type=str, default='{}')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
@@ -55,12 +57,15 @@ channels = [[0,0]]
 # you can set the average cell `diameter` in pixels yourself (recommended)
 # diameter can be a list or a single number for all images
 
+kwargs = ast.literal_eval(args.kwargs)
+kwargs = {"diameter": 60, "min_size": 4000}
+
 masks, flows, styles = model.eval(image,
                                   do_3D=True,
                                   resample=True,
                                   progress=True,
-                                  min_size=4000,
-                                  channels=channels)
+                                  channels=channels,
+                                  **kwargs)
 io.save_masks(images=image,
               masks=masks,
               flows=flows,
