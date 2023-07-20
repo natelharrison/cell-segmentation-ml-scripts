@@ -46,7 +46,7 @@ for kwargs in kwargs_list:
 . {user_dir}/anaconda3/etc/profile.d/conda.sh
 conda activate cellpose
 
-python cellpose_run.py --image_path {image_path} --add_model {model_path} --kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --add_model {model_path} --kwargs {kwargs_str} """
 
     # Save the batch script to a file
     with open(f'{batch_name}.sh', "w") as file:
