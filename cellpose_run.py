@@ -24,7 +24,6 @@ def load_model(
 ) -> models.CellposeModel:
 
     model = models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
-    print(f"Loaded {model_path.stem}")
 
     return model
 
