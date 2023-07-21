@@ -58,7 +58,8 @@ def main():
         image,
         progress=True,
         channels=channels,
-        **kwargs
+        diameter=30,
+        do_3D=False
     )
     io.save_masks(
         images=image,
