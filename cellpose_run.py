@@ -60,6 +60,9 @@ def main():
         channels=channels,
         diameter=30
     )
+
+    logging.info(f"Computed masks shape:{masks.shape}")
+
     io.save_masks(
         images=image,
         masks=masks,
