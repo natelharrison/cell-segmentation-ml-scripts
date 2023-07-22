@@ -59,7 +59,7 @@ def main():
         progress=True,
         channels=channels,
         diameter=30,
-        do_3D=False
+        do_3D=True
     )
     io.save_masks(
         images=image,
