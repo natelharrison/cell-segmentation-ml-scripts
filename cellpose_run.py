@@ -58,7 +58,8 @@ def main():
         image,
         progress=True,
         channels=channels,
-        diameter=30
+        diameter=30,
+        stitch_threshold=0.1
     )
 
     logging.info(f"Computed masks shape:{masks.shape}")
