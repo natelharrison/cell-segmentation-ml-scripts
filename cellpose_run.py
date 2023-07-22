@@ -1,4 +1,3 @@
-import ast
 import os
 import argparse
 import json
@@ -59,7 +58,7 @@ def main():
         progress=True,
         channels=channels,
         diameter=30,
-        stitch_threshold=0.1
+        **kwargs
     )
 
     logging.info(f"Computed masks shape:{masks.shape}")
