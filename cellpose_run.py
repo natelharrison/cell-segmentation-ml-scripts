@@ -57,7 +57,6 @@ def main():
         image,
         progress=True,
         channels=channels,
-        diameter=30,
         **kwargs
     )
 
