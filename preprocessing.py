@@ -89,8 +89,6 @@ def get_tiles(
         strides = window_size
 
     print(f"Saving tiles to {save_path}")
-
-
     # Create crops along XY, ZY, and ZX axes
     for axis in range(3):
         # Rotate the image array along the current axis
@@ -111,7 +109,7 @@ def get_tiles(
 
         for i, (z, y, x) in enumerate(itertools.product(
                 range(z_tiles), range(n_rows), range(n_cols),
-                desc=f"Locating tiles: {[windows.shape[0]]}",
+                desc=f"Locating tiles in {plane_names[axis]}: {[windows.shape[0]]}",
                 bar_format='{l_bar}{bar}{r_bar} {elapsed_s:.1f}s elapsed',
                 unit=' tile',
         )):
