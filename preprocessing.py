@@ -88,6 +88,9 @@ def get_tiles(
     if strides is None:
         strides = window_size
 
+    print(f"Saving tiles to {save_path}")
+
+
     # Create crops along XY, ZY, and ZX axes
     for axis in range(3):
         # Rotate the image array along the current axis
@@ -106,7 +109,6 @@ def get_tiles(
         # Define plane names
         plane_names = ['XY', 'ZY', 'ZX']
 
-        print(f"Saving files to {save_path}")
         for i, (z, y, x) in enumerate(itertools.product(
                 range(z_tiles), range(n_rows), range(n_cols),
                 desc=f"Locating tiles: {[windows.shape[0]]}",
