@@ -88,26 +88,36 @@ def get_tiles(
     if strides is None:
         strides = window_size
 
-    windows = sliding_window_view(image, window_shape=window_size)[::strides[0], ::strides[1], ::strides[2]]
-    z_tiles, n_rows, n_cols = windows.shape[:3]
-    windows = np.reshape(windows, (-1, *window_size))
+    # Create crops along XY, ZY, and ZX axes
+    for axis in range(3):
+        # Rotate the image array along the current axis
+        rotated_image = np.rot90(image, axes=(axis, (axis + 1) % 3))
 
-    test_count = int(len(windows) * test_size)
+        windows = sliding_window_view(
+            rotated_image, window_shape=window_size)[::strides[0], ::strides[1], ::strides[2]]
+        z_tiles, n_rows, n_cols = windows.shape[:3]
+        windows = np.reshape(windows, (-1, *window_size))
 
-    np.random.seed(seed)
-    test_indices = np.random.choice(len(windows), test_count, replace=False)
+        test_count = int(len(windows) * test_size)
 
-    for i, (z, y, x) in enumerate(itertools.product(
-            range(z_tiles), range(n_rows), range(n_cols),
-            desc=f"Locating tiles: {[windows.shape[0]]}",
-            bar_format='{l_bar}{bar}{r_bar} {elapsed_s:.1f}s elapsed',
-            unit=' tile',
-    )):
-        tile = f"z{z}-y{y}-x{x}_{image_path.stem}"
-        if i in test_indices:
-            imwrite(test_path / f"{tile}.tif", windows[i])
-        else:
-            imwrite(save_path / f"{tile}.tif", windows[i])
+        np.random.seed(seed)
+        test_indices = np.random.choice(len(windows), test_count, replace=False)
+
+        # Define plane names
+        plane_names = ['XY', 'ZY', 'ZX']
+
+        for i, (z, y, x) in enumerate(itertools.product(
+                range(z_tiles), range(n_rows), range(n_cols),
+                desc=f"Locating tiles: {[windows.shape[0]]}",
+                bar_format='{l_bar}{bar}{r_bar} {elapsed_s:.1f}s elapsed',
+                unit=' tile',
+        )):
+            # Include the plane name in the tile name
+            tile = f"{plane_names[axis]}_z{z}-y{y}-x{x}_{image_path.stem}"
+            if i in test_indices:
+                imwrite(test_path / f"{tile}.tif", windows[i])
+            else:
+                imwrite(save_path / f"{tile}.tif", windows[i])
 
 
 def main():
