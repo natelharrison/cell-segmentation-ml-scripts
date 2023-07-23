@@ -88,7 +88,7 @@ def get_tiles(
     if strides is None:
         strides = window_size
 
-    print(f"Saving tiles to {save_path}")
+    print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
     for axis in range(3):
         # Rotate the image array along the current axis
