@@ -106,7 +106,7 @@ def get_tiles(
         # Define plane names
         plane_names = ['XY', 'ZY', 'ZX']
 
-        logging.info(f"Saving files to {save_path}")
+        print(f"Saving files to {save_path}")
         for i, (z, y, x) in enumerate(itertools.product(
                 range(z_tiles), range(n_rows), range(n_cols),
                 desc=f"Locating tiles: {[windows.shape[0]]}",
