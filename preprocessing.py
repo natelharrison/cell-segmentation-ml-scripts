@@ -94,6 +94,8 @@ def get_tiles(
         # Rotate the image array along the current axis
         rotated_image = np.rot90(image, axes=(axis, (axis + 1) % 3))
 
+        print(rotated_image.shape)
+
         windows = sliding_window_view(
             rotated_image, window_shape=window_size)[::strides[0], ::strides[1], ::strides[2]]
         z_tiles, n_rows, n_cols = windows.shape[:3]
