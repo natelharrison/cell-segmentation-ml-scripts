@@ -49,7 +49,6 @@ else:
 
 for i, kwargs in enumerate(kwargs_list):
     # Convert kwargs dictionary to a string
-    savedir_name = f"batch_{i}"
     kwargs_str = json.dumps(kwargs)
 
     # Create the batch script
@@ -75,7 +74,7 @@ for i, kwargs in enumerate(kwargs_list):
 . {user_dir}/anaconda3/etc/profile.d/conda.sh
 conda activate cellpose
 
-python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {savedir_name} --kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
 
     # Save the batch script to a file
     with open(save_dir / f'{batch_name}.sh', "w") as file:
