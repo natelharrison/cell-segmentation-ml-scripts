@@ -41,8 +41,10 @@ save_dir = user_dir/'cellpose_run'/'mass_batch'
 log_dir = user_dir/'cellpose_run'/'logs'
 
 image_path = Path(args.image)
-model_path = Path(args.model)
-model_list = [Path(model) for model in model_list]
+if args.model:
+    model_list = [Path(args.model)]
+else:
+    model_list = [Path(model) for model in model_list]
 
 
 for i, kwargs in enumerate(kwargs_list):
@@ -54,8 +56,7 @@ for i, kwargs in enumerate(kwargs_list):
     batch_name = f'batch_{i}_{image_path.stem}'
     log_output = log_dir/f'{batch_name}.log'
 
-    if not args.model:
-        model_path = model_list[i % len(model_list)]
+    model_path = model_list[i % len(model_list)]
 
     # Rest of your script...
     batch_script = f"""#!/bin/sh
