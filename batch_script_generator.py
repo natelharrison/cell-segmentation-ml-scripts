@@ -4,6 +4,7 @@ import json
 import os
 
 from pathlib import Path
+from shutil import rmtree
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image', type=str, default='')
@@ -40,6 +41,10 @@ dir = Path.cwd()
 user_dir = dir.parent
 save_dir = user_dir/'cellpose_run'/args.name
 log_dir = user_dir/'cellpose_run'/'logs'
+
+if save_dir.exists():
+    rmtree(save_dir)
+os.mkdir(save_dir)
 
 image_path = Path(args.image)
 if args.model:
