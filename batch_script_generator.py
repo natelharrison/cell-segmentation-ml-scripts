@@ -19,16 +19,18 @@ args = parser.parse_args()
 # Define your list of kwargs here
 # 3D settings
 kwargs_list = [
-    {"diameter": 0, "do_3D": True, "resample": False, "mask_threshold": 0, "min_size": 5000},
-    {"diameter": 0, "do_3D": True, "resample": False, "mask_threshold": 2, "min_size": 5000},
-    {"diameter": 0, "do_3D": True, "resample": False, "mask_threshold": 4, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": True, "mask_threshold": 0, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": False, "mask_threshold": 0, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": False, "mask_threshold": 2, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": False, "mask_threshold": 4, "min_size": 5000},
-    {"diameter": 60, "do_3D": True, "resample": False, "mask_threshold": 0, "min_size": 5000},
-    {"diameter": 60, "do_3D": True, "resample": False, "mask_threshold": 2, "min_size": 5000},
-    {"diameter": 60, "do_3D": True, "resample": False, "mask_threshold": 4, "min_size": 5000},
+    {"diameter": 0, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000},
+    {"diameter": 0, "do_3D": True, "resample": False, "cellprob_threshold": 2, "min_size": 5000},
+    {"diameter": 0, "do_3D": True, "resample": False, "cellprob_threshold": 4, "min_size": 5000},
+    {"diameter": 30, "do_3D": True, "resample": True, "cellprob_threshold": 0, "min_size": 5000},
+    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000},
+    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000, "flow_threshold": 0.1},
+    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000, "augment": True},
+    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 2, "min_size": 5000},
+    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 4, "min_size": 5000},
+    {"diameter": 60, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000},
+    {"diameter": 60, "do_3D": True, "resample": False, "cellprob_threshold": 2, "min_size": 5000},
+    {"diameter": 60, "do_3D": True, "resample": False, "cellprob_threshold": 4, "min_size": 5000},
 ]
 
 
