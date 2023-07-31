@@ -8,6 +8,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument('--image', type=str, default='')
 parser.add_argument('--model', type=str, default='')
+parser.add_argument('name', type=str, default='generated_batches')
 args = parser.parse_args()
 
 # Define your list of kwargs here
@@ -37,7 +38,7 @@ model_list = [
 
 dir = Path.cwd()
 user_dir = dir.parent
-save_dir = user_dir/'cellpose_run'/'mass_batch'
+save_dir = user_dir/'cellpose_run'/args.name
 log_dir = user_dir/'cellpose_run'/'logs'
 
 image_path = Path(args.image)
