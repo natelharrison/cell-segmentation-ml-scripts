@@ -16,24 +16,24 @@ args = parser.parse_args()
 # 3D settings
 kwargs_list = [
     #3D
-    {"diameter": 30, "do_3D": True, "min_size": 4000},
-    {"diameter": 30, "do_3D": True, "min_size": 4000},
-    {"diameter": 30, "do_3D": True, "min_size": 4000},
-    {"diameter": 30, "do_3D": True, "min_size": 4000},
     {"diameter": 30, "do_3D": True, "min_size": 4000}
+    # {"diameter": 30, "do_3D": True, "min_size": 4000},
+    # {"diameter": 30, "do_3D": True, "min_size": 4000},
+    # {"diameter": 30, "do_3D": True, "min_size": 4000},
+    # {"diameter": 30, "do_3D": True, "min_size": 4000}
 ]
 
 model_list = [
     #128_zyx_scratch
-    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_26_17_13_05.002100",
+    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_26_17_13_05.002100",
     #128_zyx_cyto2
-    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_24_23_31_57.719699",
+    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_24_23_31_57.719699",
     #64_default
     "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/cropping_output/models/cellpose_residual_on_style_on_concatenation_off_cropping_output_2023_07_01_18_46_14.616214",
     #128_zyx_cyto2_round2
-    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_04_39_14.117439",
+    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_04_39_14.117439",
     #128_zyx_cyto2_additional
-    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_20_48_11.645318"
+    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_20_48_11.645318"
 ]
 
 
