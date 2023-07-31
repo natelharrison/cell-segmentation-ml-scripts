@@ -7,47 +7,31 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image', type=str, default='')
-parser.add_argument('--model', type=str, default='cyto2')
+parser.add_argument('--model', type=str, default='')
 args = parser.parse_args()
 
 # Define your list of kwargs here
 # 3D settings
 kwargs_list = [
     #3D
-    # {"diameter": 0, "do_3D": True, "resample": True},
-    # {"diameter": 64, "do_3D": True, "resample": True},
-    # {"diameter": 58, "do_3D": True, "resample": True},
-    # {"diameter": 30, "do_3D": True, "resample": True},
-    # {"diameter": 0, "do_3D": True, "resample": False},
-    # {"diameter": 64, "do_3D": True, "resample": False},
-    # {"diameter": 58, "do_3D": True, "resample": False},
-    # {"diameter": 30, "do_3D": True, "resample": False},
-    # {"diameter": 0, "do_3D": True, "resample": True, "min_size": 4000},
-    # {"diameter": 64, "do_3D": True, "resample": True, "min_size": 4000},
-    # {"diameter": 58, "do_3D": True, "resample": True, "min_size": 4000},
-    # {"diameter": 30, "do_3D": True, "resample": True, "min_size": 4000},
+    {"diameter": 30, "do_3D": True, "min_size": 4000},
+    {"diameter": 30, "do_3D": True, "min_size": 4000},
+    {"diameter": 30, "do_3D": True, "min_size": 4000},
+    {"diameter": 30, "do_3D": True, "min_size": 4000},
+    {"diameter": 30, "do_3D": True, "min_size": 4000}
+]
 
-    #2D
-
-    {"diameter": 0, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 64, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 58, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 30, "do_3D": False, "resample": True, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 0, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 64, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 58, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.1},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.2},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.3},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.4},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.5},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.6},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.7},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.8},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 0.9},
-    {"diameter": 30, "do_3D": False, "resample": False, "cellprob_threshold": 0.0, "flow_threshold": 0.4, "stitch_threshold": 1.0}
+model_list = [
+    #128_zyx_scratch
+    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_26_17_13_05.002100",
+    #128_zyx_cyto2
+    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_24_23_31_57.719699",
+    #64_default
+    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/cropping_output/models/cellpose_residual_on_style_on_concatenation_off_cropping_output_2023_07_01_18_46_14.616214",
+    #128_zyx_cyto2_round2
+    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_04_39_14.117439",
+    #128_zyx_cyto2_additional
+    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_20_48_11.645318"
 ]
 
 
@@ -58,6 +42,8 @@ log_dir = user_dir/'cellpose_run'/'logs'
 
 image_path = Path(args.image)
 model_path = Path(args.model)
+model_list = [Path(model) for model in model_list]
+
 
 for i, kwargs in enumerate(kwargs_list):
     # Convert kwargs dictionary to a string
@@ -68,6 +54,8 @@ for i, kwargs in enumerate(kwargs_list):
     batch_name = f'batch_{i}_{image_path.stem}'
     log_output = log_dir/f'{batch_name}.log'
 
+    if not args.model:
+        model_path = model_list[i % len(model_list)]
 
     # Rest of your script...
     batch_script = f"""#!/bin/sh
