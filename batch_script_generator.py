@@ -40,7 +40,7 @@ model_list = [
 dir = Path.cwd()
 user_dir = dir.parent
 save_dir = user_dir/'cellpose_run'/args.name
-log_dir = user_dir/'cellpose_run'/'logs'
+log_dir = save_dir
 
 if save_dir.exists():
     rmtree(save_dir)
