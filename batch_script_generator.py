@@ -40,9 +40,9 @@ model_list = [
     #64_default
     # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/cropping_output/models/cellpose_residual_on_style_on_concatenation_off_cropping_output_2023_07_01_18_46_14.616214",
     #128_zyx_cyto2_round2
-    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_04_39_14.117439",
+    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_04_39_14.117439",
     #128_zyx_cyto2_additional
-    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_20_48_11.645318"
+    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_20_48_11.645318"
 ]
 
 
