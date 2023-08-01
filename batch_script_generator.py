@@ -69,8 +69,8 @@ for i, kwargs in enumerate(kwargs_list):
     kwargs_str = json.dumps(kwargs)
 
     # Create the batch script
-    batch_name = f'batch_{i}_{image_path.stem}'
-    log_output = log_dir/f'{batch_name}.log'
+    script_name = f'batch_{i}_{image_path.stem}'
+    log_output = log_dir/f'{script_name}.log'
 
     model_path = model_list[i % len(model_list)]
 
@@ -91,14 +91,14 @@ for i, kwargs in enumerate(kwargs_list):
 . {user_dir}/anaconda3/etc/profile.d/conda.sh
 conda activate cellpose
 
-python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {script_name} --batch_name {args.name}--kwargs '{kwargs_str}' """
 
     # Save the batch script to a file
-    with open(save_dir / f'{batch_name}.sh', "w") as file:
+    with open(save_dir / f'{script_name}.sh', "w") as file:
         file.write(batch_script)
 
     # Run the batch script
-    subprocess.run(["sbatch", (save_dir / f"{batch_name}.sh").as_posix()])
+    subprocess.run(["sbatch", (save_dir / f"{script_name}.sh").as_posix()])
 
 
 
