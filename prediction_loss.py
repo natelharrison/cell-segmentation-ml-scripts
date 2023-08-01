@@ -25,12 +25,12 @@ def main():
     model = models.CellposeModel()
 
     labels = imread(labels_path.as_posix())
-    labels_tensor = torch.from_numpy(labels)[None, ...]
+    labels_tensor = torch.from_numpy(labels.astype('float32'))[None, ...]
 
     files = list_files(dir_path)
     for file in files:
         prediction = imread(file.as_posix())
-        prediction_tensor = torch.from_numpy(prediction)[None, ...]
+        prediction_tensor = torch.from_numpy(prediction.astype('float32'))[None, ...]
 
         loss = model.loss_fn(labels_tensor, prediction_tensor)
         print(f"File: {file.as_posix()}, Loss: {loss.item()}")
