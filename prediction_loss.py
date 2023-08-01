@@ -1,9 +1,9 @@
-import os
-import torch
 import argparse
+import numpy as np
+from cellpose import utils
 from pathlib import Path
-from cellpose import models
 from cellpose.io import imread
+from cellpose.models import CellposeModel
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
@@ -22,12 +22,12 @@ def main():
     dir_path = Path(args.dir)
     labels_path = Path(args.labels)
 
-    model = models.CellposeModel()
-
     labels = imread(labels_path.as_posix())
     labels = labels.astype('float32')[None, ...]
 
     files = list_files(dir_path)
+    model = CellposeModel(gpu=False, model_type='cyto')
+
     for file in files:
         prediction = imread(file.as_posix())
         prediction = prediction.astype('float32')[None, ...]
