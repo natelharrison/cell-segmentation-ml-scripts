@@ -25,13 +25,16 @@ def main():
     model = models.CellposeModel()
 
     labels = imread(labels_path.as_posix())
+    labels = labels.astype('float32')[None, ...]
 
     files = list_files(dir_path)
     for file in files:
         prediction = imread(file.as_posix())
+        prediction = prediction.astype('float32')[None, ...]
 
         loss = model.loss_fn(labels, prediction)
         print(f"File: {file.as_posix()}, Loss: {loss.item()}")
+
 
 if __name__ == '__main__':
     main()
