@@ -21,11 +21,14 @@ def list_files(directory):
 
 def dice_loss(true, preds):
     num_classes = int(np.max(true)) + 1
-    true_one_hot = np.eye(num_classes)[true.astype(int)]
-    preds_one_hot = np.eye(num_classes)[preds.astype(int)]
-    intersection = np.sum(true_one_hot * preds_one_hot, axis=(-1, -2, -3))
-    dice = (2. * intersection) / (np.sum(true_one_hot, axis=(-1, -2, -3)) + np.sum(preds_one_hot, axis=(-1, -2, -3)))
-    return 1 - np.mean(dice)
+    dice = 0
+    for i in range(num_classes):
+        true_binary = (true == i)
+        preds_binary = (preds == i)
+        intersection = np.sum(true_binary * preds_binary)
+        dice += (2. * intersection) / (np.sum(true_binary) + np.sum(preds_binary))
+    return 1 - dice / num_classes
+
 
 
 def main():
