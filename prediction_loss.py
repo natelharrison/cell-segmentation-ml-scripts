@@ -19,14 +19,16 @@ def list_files(directory):
     return files
 
 
-def dice_loss(y_true, y_pred):
-    y_true_f = y_true.flatten()
-    y_pred_f = y_pred.flatten()
+def dice_loss(true, preds):
+    num_classes = np.max(true) + 1  # Assumes labels are in range [0, num_classes)
+    dice = 0
+    for i in range(num_classes):
+        true_binary = (true == i)
+        preds_binary = (preds == i)
+        intersection = np.sum(true_binary * preds_binary)
+        dice += (2. * intersection) / (np.sum(true_binary) + np.sum(preds_binary))
+    return 1 - dice / num_classes  # Average over all classes
 
-    intersection = np.sum(y_true_f * y_pred_f)
-    dice_coeff = (2. * intersection) / (np.sum(y_true_f) + np.sum(y_pred_f))
-
-    return 1 - dice_coeff
 
 
 def main():
