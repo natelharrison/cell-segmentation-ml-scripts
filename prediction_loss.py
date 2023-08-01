@@ -36,13 +36,11 @@ def main():
     labels_path = Path(args.labels)
 
     labels = imread(labels_path.as_posix())
-    labels = labels.astype('float32')[None, ...]
 
     files = list_files(dir_path)
 
     for file in files:
         prediction = imread(file.as_posix())
-        prediction = prediction.astype('float32')[None, ...]
 
         loss = dice_loss(labels, prediction)
         print(f"File: {file.as_posix()}, Loss: {loss}")
