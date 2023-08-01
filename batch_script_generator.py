@@ -91,7 +91,7 @@ for i, kwargs in enumerate(kwargs_list):
 . {user_dir}/anaconda3/etc/profile.d/conda.sh
 conda activate cellpose
 
-python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {script_name} --batch_name {args.name}--kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {script_name} --batch_name {args.name} --kwargs '{kwargs_str}' """
 
     # Save the batch script to a file
     with open(save_dir / f'{script_name}.sh', "w") as file:
