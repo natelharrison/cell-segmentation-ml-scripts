@@ -89,7 +89,7 @@ def get_tiles(
     if strides is None:
         strides = window_size
 
-    if args.remove_label:
+    if args.remove_label and 'mask' in image_path.stem:
         image[image == args.remove_label] = 0
 
         unique, counts = np.unique(image, return_counts=True)
