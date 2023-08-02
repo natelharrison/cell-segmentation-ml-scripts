@@ -7,6 +7,7 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str)
+parser.add_argument('--remove_label', type=int)
 args = parser.parse_args()
 
 
@@ -15,6 +16,9 @@ def main():
 
     image = imread(file_path.as_posix())
     image = image.flatten()
+
+    if args.remove_label:
+        image[image == args.remove_label] = 0
 
     unique, counts = np.unique(image, return_counts=True)
 
@@ -27,7 +31,7 @@ def main():
     max_label_size = max(counts)
     largest_label_index = np.argmax(counts)
     largest_label = unique[largest_label_index]
-    print(f"Largest label is {largest_label} with size {max_label_size}")
+    print(f"Largest label is {largest_label} with size {max_label_size} \n")
 
     avg_cell_size = np.cbrt(np.mean(iqr_counts))
     print(f"Average cell size in diameter (excluding outliers): {avg_cell_size}")
