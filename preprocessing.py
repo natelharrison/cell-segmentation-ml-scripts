@@ -19,6 +19,7 @@ parser.add_argument('--test_size', type=float, default=0)
 parser.add_argument('--crop_size', type=int, nargs="+", default=(1, 64, 64))
 parser.add_argument('--strides', type=int, nargs="+", default=None)
 parser.add_argument('--save_name', type=str, default="processed")
+parser.add_argument('--remove_label', type=int, default=0)
 args = parser.parse_args()
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,17 @@ def get_tiles(
 
     if strides is None:
         strides = window_size
+
+    if args.remove_label:
+        image[image == args.remove_label] = 0
+
+        unique, counts = np.unique(image, return_counts=True)
+
+        max_label_size = max(counts)
+        largest_label_index = np.argmax(counts)
+        largest_label = unique[largest_label_index]
+
+        print(f"Largest label is now {largest_label} with size {max_label_size} \n")
 
     print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
