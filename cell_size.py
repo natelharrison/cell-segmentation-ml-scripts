@@ -24,6 +24,11 @@ def main():
     mask = (counts >= lower_percentile) & (counts <= upper_percentile)
     iqr_counts = counts[mask]
 
+    max_label_size = max(counts)
+    largest_label_index = np.argmax(counts)
+    largest_label = unique[largest_label_index]
+    print(f"Largest label is {largest_label} with size {max_label_size}")
+
     avg_cell_size = np.cbrt(np.mean(iqr_counts))
     print(f"Average cell size in diameter (excluding outliers): {avg_cell_size}")
 
