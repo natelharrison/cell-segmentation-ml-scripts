@@ -16,41 +16,30 @@ parser.add_argument('--model', type=str, default='')
 parser.add_argument('--name', type=str, default=date_string)
 args = parser.parse_args()
 
-# Define your list of kwargs here
-# 3D settings
 kwargs_list = [
-    {"diameter": 0, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000},
-    {"diameter": 0, "do_3D": True, "resample": False, "cellprob_threshold": 2, "min_size": 5000},
-    {"diameter": 0, "do_3D": True, "resample": False, "cellprob_threshold": 4, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": True, "cellprob_threshold": 0, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000, "flow_threshold": 0.1},
-    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000, "augment": True},
-    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 2, "min_size": 5000},
-    {"diameter": 30, "do_3D": True, "resample": False, "cellprob_threshold": 4, "min_size": 5000},
-    {"diameter": 60, "do_3D": True, "resample": False, "cellprob_threshold": 0, "min_size": 5000},
-    {"diameter": 60, "do_3D": True, "resample": False, "cellprob_threshold": 2, "min_size": 5000},
-    {"diameter": 60, "do_3D": True, "resample": False, "cellprob_threshold": 4, "min_size": 5000},
-]
+    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": False},
 
+    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": False},
+
+    {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": False}
+]
 
 model_list = [
-    #128_zyx_scratch
-    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_26_17_13_05.002100",
-    #128_zyx_cyto2
-    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_all_planes/models/cellpose_residual_on_style_on_concatenation_off_128_all_planes_2023_07_24_23_31_57.719699",
-    #64_default
-    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/cropping_output/models/cellpose_residual_on_style_on_concatenation_off_cropping_output_2023_07_01_18_46_14.616214",
-    #128_zyx_cyto2_round2
-    # "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_04_39_14.117439",
-    #128_zyx_cyto2_additional
-    "/clusterfs/fiona/segmentation_curation/training_data/rotated_cropped_data/128_nonoverlap/models/cellpose_residual_on_style_on_concatenation_off_128_nonoverlap_2023_07_28_20_48_11.645318"
-]
 
+]
 
 dir = Path.cwd()
 user_dir = dir.parent
-save_dir = user_dir/'cellpose_run'/args.name
+save_dir = user_dir / 'cellpose_run' / args.name
 log_dir = save_dir
 
 if save_dir.exists():
@@ -63,14 +52,13 @@ if args.model:
 else:
     model_list = [Path(model) for model in model_list]
 
-
 for i, kwargs in enumerate(kwargs_list):
     # Convert kwargs dictionary to a string
     kwargs_str = json.dumps(kwargs)
 
     # Create the batch script
     batch_name = f'batch_{i}_{image_path.stem}'
-    log_output = log_dir/f'{batch_name}.log'
+    log_output = log_dir / f'{batch_name}.log'
 
     model_path = model_list[i % len(model_list)]
 
@@ -99,6 +87,3 @@ python cellpose_run.py --image_path {image_path} --model {model_path} --save_nam
 
     # Run the batch script
     subprocess.run(["sbatch", (save_dir / f"{batch_name}.sh").as_posix()])
-
-
-
