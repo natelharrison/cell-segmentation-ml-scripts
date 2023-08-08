@@ -35,9 +35,9 @@ kwargs_list = [
 
 model_list = [
     # 64_combined epoch 200
-    "/clusterfs/fiona/segmentation_curation/training_data/combined_dataset/64_no_overlap/models/cellpose_residual_on_style_on_concatenation_off_64_no_overlap_2023_08_03_16_09_17.755759"
+    "/clusterfs/fiona/segmentation_curation/training_data/combined_dataset/64_no_overlap/models/cellpose_residual_on_style_on_concatenation_off_64_no_overlap_2023_08_03_16_09_17.755759",
     # 128_combined epoch 400
-    "/clusterfs/fiona/segmentation_curation/training_data/combined_dataset/128_64_overlap/models/cellpose_residual_on_style_on_concatenation_off_128_64_overlap_2023_08_03_01_23_59.133837"
+    "/clusterfs/fiona/segmentation_curation/training_data/combined_dataset/128_64_overlap/models/cellpose_residual_on_style_on_concatenation_off_128_64_overlap_2023_08_03_01_23_59.133837",
     # 64_default
     "/clusterfs/fiona/segmentation_curation/cellpose_training/trained_models/training_trial_2/cellpose_residual_on_style_on_concatenation_off_cropping_output_2023_07_01_18_46_14.616214"
 ]
@@ -70,22 +70,22 @@ for model in model_list:
 
         # Rest of your script...
         batch_script = f"""#!/bin/sh
-    #SBATCH --qos=abc_normal
-    #SBATCH --gres=gpu:1
-    #SBATCH --partition=abc
-    #SBATCH --account=co_abc
-    #SBATCH --nodes=1
-    #SBATCH --time=8:00:00
-    #SBATCH --ntasks=5
-    #SBATCH --mem=125G
-    #SBATCH --output={log_output}
-    #SBATCH --export=ALL
+#SBATCH --qos=abc_normal
+#SBATCH --gres=gpu:1
+#SBATCH --partition=abc
+#SBATCH --account=co_abc
+#SBATCH --nodes=1
+#SBATCH --time=8:00:00
+#SBATCH --ntasks=5
+#SBATCH --mem=125G
+#SBATCH --output={log_output}
+#SBATCH --export=ALL
     
-    ### Run your command
-    . {user_dir}/anaconda3/etc/profile.d/conda.sh
-    conda activate cellpose
+### Run your command
+. {user_dir}/anaconda3/etc/profile.d/conda.sh
+conda activate cellpose
     
-    python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
 
         # Save the batch script to a file
         with open(save_dir / f'{batch_name}.sh', "w") as file:
