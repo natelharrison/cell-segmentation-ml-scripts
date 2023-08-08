@@ -12,6 +12,7 @@ parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
 parser.add_argument('--kwargs', type=str, default='{}')
+parser.add_argument('--batch_name', type=str, default='')
 parser.add_argument('--save_name', type=str, default=None)
 args = parser.parse_args()
 
@@ -36,7 +37,12 @@ def main():
     file_name = file_path.stem
     file = file_path.as_posix()
 
-    save_dir = file_path.parent / f"{model_path.stem}_predictions"
+
+    batch_name = args.batch_name
+    if not batch_name:
+        batch_name = model_path.stem
+
+    save_dir = file_path.parent / f"{batch_name}_predictions"
     if args.save_name:
         save_dir = save_dir / args.save_name
     os.makedirs(save_dir, exist_ok=True)
