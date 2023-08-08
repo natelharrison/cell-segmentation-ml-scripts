@@ -69,8 +69,8 @@ for model in model_list:
         model_path = model
 
         # Rest of your script...
-        batch_script = f"""#!/bin/sh
-#SBATCH --qos=abc_normal
+        batch_script = f"""#!/bin/shdfadfasdfadfas
+#SBATCH --qos=abc_normald
 #SBATCH --gres=gpu:1
 #SBATCH --partition=abc
 #SBATCH --account=co_abc
