@@ -62,8 +62,8 @@ conda activate cellpose
 
 python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
 
-def make_dir(dir_path: Path):
-    if dir_path.exists():
+def make_dir(dir_path: Path, exists_ok=False):
+    if dir_path.exists() and exists_ok is False:
         rmtree(dir_path)
     os.mkdir(dir_path)
 
@@ -77,12 +77,12 @@ def main():
     user_dir = Path.home()
     batch_name = args.batch_name
     script_batch_dir = user_dir / 'cellpose_run' / batch_name
-    make_dir(script_batch_dir)
+    make_dir(script_batch_dir, )
 
     for model_path in model_path_list:
         for i, kwargs_str in enumerate(kwargs_str_list):
             script_save_dir = script_batch_dir / model_path.stem
-            make_dir(script_save_dir)
+            make_dir(script_save_dir, exists_ok=True)
 
             log_path = (script_save_dir / f"batch_{i}").as_posix()
 
