@@ -45,7 +45,7 @@ model_list = [
 ]
 
 batch_script = """#!/bin/sh
-#SBATCH --qos=abc_normald
+#SBATCH --qos=abc_normal
 #SBATCH --gres=gpu:1
 #SBATCH --partition=abc
 #SBATCH --account=co_abc
