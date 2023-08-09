@@ -15,7 +15,7 @@ parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
 parser.add_argument('--kwargs', type=str,
-    default='{"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": True}')
+    default='{"diameter": 30, "do_3D": true, "resample": true, "min_size": 5000, "augment": true}')
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()
