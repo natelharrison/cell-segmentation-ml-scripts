@@ -58,6 +58,18 @@ def get_cleaned_file_name(file):
     return re.match(pattern, file.stem)[0]
 
 
+def remove_label(image):
+    image[image == args.remove_label] = 0
+
+    unique, counts = np.unique(image, return_counts=True)
+
+    max_label_size = max(counts)
+    largest_label_index = np.argmax(counts)
+    largest_label = unique[largest_label_index]
+
+    print(f"Largest label is now {largest_label} with size {max_label_size} \n")
+
+
 def get_tiles(
         image_path: Path,
         save_path: Path,
@@ -90,15 +102,7 @@ def get_tiles(
         strides = window_size
 
     if args.remove_label and 'mask' in image_path.stem:
-        image[image == args.remove_label] = 0
-
-        unique, counts = np.unique(image, return_counts=True)
-
-        max_label_size = max(counts)
-        largest_label_index = np.argmax(counts)
-        largest_label = unique[largest_label_index]
-
-        print(f"Largest label is now {largest_label} with size {max_label_size} \n")
+        image = remove_label(image)
 
     print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
