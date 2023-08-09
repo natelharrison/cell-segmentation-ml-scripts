@@ -62,10 +62,10 @@ conda activate cellpose
 
 python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
 
-def make_dir(dir_path: Path, exists_ok=False):
-    if dir_path.exists() and exists_ok is False:
+def make_dir(dir_path: Path, remove_dir=True):
+    if dir_path.exists() and remove_dir is True:
         rmtree(dir_path)
-    os.makedirs(dir_path, exists_ok)
+    os.makedirs(dir_path, exist_ok=True)
 
 
 def main():
