@@ -12,7 +12,7 @@ date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, default=None)
-parser.add_argument('--batch_name', type=str, default=date_string)
+parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
 
 kwargs_list = [
@@ -60,7 +60,7 @@ batch_script = """#!/bin/sh
 . {user_dir}/anaconda3/etc/profile.d/conda.sh
 conda activate cellpose
 
-python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {batch_name} --kwargs '{kwargs_str}' """
+python cellpose_run.py --image_path {image_path} --model {model_path} --save_name {save_name} --batch_num {batch_num} --kwargs '{kwargs_str}' """
 
 def make_dir(dir_path: Path, remove_dir=True):
     if dir_path.exists() and remove_dir is True:
@@ -75,8 +75,8 @@ def main():
     model_path_list = [Path(model) for model in model_list]
 
     user_dir = Path.home()
-    batch_name = args.batch_name
-    script_batch_dir = user_dir / 'cellpose_run' / batch_name
+    save_name = args.save_name
+    script_batch_dir = user_dir / 'cellpose_run' / save_name
     make_dir(script_batch_dir)
 
     for model_path in model_path_list:
@@ -84,6 +84,7 @@ def main():
             script_save_dir = script_batch_dir / model_path.stem
             make_dir(script_save_dir, remove_dir=False)
 
+            batch_num = i
             log_path = (script_save_dir / f"batch_{i}").as_posix()
 
             formatted_batch_script = batch_script.format(
@@ -91,7 +92,8 @@ def main():
                 user_dir = user_dir,
                 image_path = image_path,
                 model_path = model_path,
-                batch_name = batch_name,
+                save_name = save_name,
+                batch_num = batch_num,
                 kwargs_str = kwargs_str
             )
 

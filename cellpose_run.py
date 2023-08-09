@@ -16,7 +16,7 @@ parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default='cyto2')
 parser.add_argument('--kwargs', type=str, default='{}')
 parser.add_argument('--save_name', type=str, default=date_string)
-parser.add_argument('--batch_name', type=str, default=None)
+parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
@@ -39,12 +39,12 @@ def main():
     image_name = image_path.stem
 
     save_name = args.save_name
-    batch_name = args.batch_name
+    batch_num = args.batch_num
 
     save_dir = image_path.parent / save_name
-    if batch_name is not None:
+    if batch_num is not None:
         save_dir = save_dir / model_path.stem
-        image_name = f"{batch_name}_{image_name}"
+        image_name = f"{batch_num}_{image_name}"
     os.makedirs(save_dir, exist_ok=True)
 
     channels = [[0,0]]
