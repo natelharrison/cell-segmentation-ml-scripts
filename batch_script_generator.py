@@ -86,7 +86,7 @@ def main():
 
             log_path = (script_save_dir / f"batch_{i}").as_posix()
 
-            batch_script.format(
+            formatted_batch_script = batch_script.format(
                 log_path = log_path,
                 user_dir = user_dir,
                 image_path = image_path,
@@ -96,7 +96,7 @@ def main():
             )
 
             script_save_path = script_save_dir / f"batch_{i}.sh"
-            script_save_path.write_text(batch_script)
+            script_save_path.write_text(formatted_batch_script)
             subprocess.run(['sbatch', script_save_path.as_posix()])
 
 if __name__ == '__main__':
