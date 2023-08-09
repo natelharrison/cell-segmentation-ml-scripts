@@ -16,19 +16,19 @@ parser.add_argument('--batch_name', type=str, default=date_string)
 args = parser.parse_args()
 
 kwargs_list = [
-    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
-    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
-    {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    # {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    # {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    # {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
     {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": False},
 
-    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
-    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
-    {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    # {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    # {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    # {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
     {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": False},
 
-    {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
-    {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
-    {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    # {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    # {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    # {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
     {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": False}
 ]
 
