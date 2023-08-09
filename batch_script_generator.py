@@ -97,7 +97,7 @@ def main():
 
             script_save_path = script_save_dir / f"batch_{i}.sh"
             script_save_path.write_text(batch_script)
-            subprocess.run(['sbatch', script_save_path.as_posix()], capture_output=True)
+            subprocess.run(['sbatch', script_save_path.as_posix()])
 
 if __name__ == '__main__':
     main()
