@@ -64,7 +64,7 @@ python cellpose_run.py --image_path {image_path} --model {model_path} --save_nam
 
 def make_dir(dir_path: Path):
     if dir_path.exists():
-        os.rmdir(dir_path)
+        rmtree(dir_path)
     os.mkdir(dir_path)
 
 
