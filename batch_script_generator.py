@@ -77,7 +77,7 @@ def main():
     user_dir = Path.home()
     batch_name = args.batch_name
     script_batch_dir = user_dir / 'cellpose_run' / batch_name
-    make_dir(script_batch_dir, )
+    make_dir(script_batch_dir)
 
     for model_path in model_path_list:
         for i, kwargs_str in enumerate(kwargs_str_list):
