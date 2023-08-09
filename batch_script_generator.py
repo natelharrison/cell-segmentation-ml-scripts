@@ -95,9 +95,9 @@ def main():
                 kwargs_str = kwargs_str
             )
 
-            script_path = script_save_dir / f"batch_{i}.sh"
-            script_save_dir.write_text(script_path)
-            subprocess.run(['sbatch', script_path.as_posix()], capture_output=True)
+            script_save_path = script_save_dir / f"batch_{i}.sh"
+            script_save_path.write_text(batch_script)
+            subprocess.run(['sbatch', script_save_path.as_posix()], capture_output=True)
 
 if __name__ == '__main__':
     main()
