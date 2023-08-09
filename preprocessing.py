@@ -47,17 +47,6 @@ def create_save_dir(
     return save_dir
 
 
-def get_cleaned_file_name(file):
-    """
-    Extract the cleaned file name from the given file using a regular expression pattern.
-
-    :param file: pathlib.Path object representing the file
-    :return: string, the cleaned file name
-    """
-    pattern = 'Scan_Iter_\d{4}_CamA_ch0_CAM1_stack\d{4}_\d{3}nm_\d{7}msec_\d{10}msecAbs'
-    return re.match(pattern, file.stem)[0]
-
-
 def remove_label(image):
     image[image == args.remove_label] = 0
 
