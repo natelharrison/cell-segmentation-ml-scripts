@@ -81,7 +81,7 @@ def main():
 
     for model_path in model_path_list:
         for i, kwargs_str in enumerate(kwargs_str_list):
-            script_save_dir = script_batch_dir / model_path.stem / f"batch_{i}.sh"
+            script_save_dir = script_batch_dir / model_path.stem
             make_dir(script_save_dir)
 
             log_path = (script_save_dir / f"batch_{i}").as_posix()
@@ -95,6 +95,7 @@ def main():
                 kwargs_str = kwargs_str
             )
 
+            script_path = script_save_dir / f"batch_{i}.sh"
             script_save_dir.write_text(batch_script)
             subprocess.run(['sbatch', script_save_dir.as_posix()], capture_output=True)
 
