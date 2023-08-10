@@ -41,9 +41,8 @@ def load_model(
     return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
 
 
-def initialize_worker(dask_worker):
-    """Initialize each worker by setting CUDA_VISIBLE_DEVICES."""
-    gpu_id = int(dask_worker.name.split('-')[-1])  # Extract GPU ID from worker name
+def initialize_worker(worker):
+    gpu_id = worker.name.split('-')[-1]
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
 
 
