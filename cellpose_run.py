@@ -1,7 +1,10 @@
 import os
 import json
+import dask
 import logging
 import argparse
+
+
 from pathlib import Path
 from tifffile import imwrite
 from datetime import datetime
@@ -50,7 +53,7 @@ def main():
     image_path = Path(args.image_path)
     image_name = image_path.stem
     image = imread(image_path.as_posix())
-    channels = [[0,0]]
+
 
     #File structuring
     save_name = args.save_name
@@ -70,6 +73,7 @@ def main():
     logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
     #Run predictions
+    channels = [[0, 0]]
     masks, flows, style = run_predictions(
         model,
         image,
