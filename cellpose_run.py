@@ -43,7 +43,7 @@ def load_model(
 
 
 def run_predictions(model, image, channels, **kwargs):
-    mask, _, _ =  model.eval(image, progress=False, channels=channels, **kwargs)
+    mask, _, _ =  model.eval(image, progress=False, channels=channels, batch_size=16, **kwargs)
     return mask
 
 
