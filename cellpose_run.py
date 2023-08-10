@@ -1,19 +1,19 @@
 import os
 import json
 import dask
+import torch
 import logging
 import argparse
 
 import dask.array as da
 
 from pathlib import Path
-
-import torch
 from tifffile import imwrite
 from datetime import datetime
 from cellpose.io import imread
 from cellpose import models, io
-from dask.distributed import Client, LocalCluster
+from dask.distributed import Client
+from dask_cuda import LocalCUDACluster
 
 
 now = datetime.now()
@@ -41,11 +41,6 @@ def load_model(
     return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
 
 
-def initialize_worker(worker):
-    gpu_id = worker.name.split('-')[-1]
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
-
-
 def run_predictions(model, image, channels, **kwargs):
     mask, _, _ =  model.eval(image, progress=True, channels=channels, **kwargs)
     return mask
@@ -66,8 +61,7 @@ def tile_image(image_path: Path):
 
 def main():
     #Dask stuff
-    num_gpus = torch.cuda.device_count()
-    cluster = LocalCluster(n_workers=num_gpus, threads_per_worker=1, worker_init=initialize_worker)
+    cluster = LocalCUDACluster()
     client = Client(cluster)
 
     #Load model
