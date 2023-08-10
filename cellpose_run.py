@@ -50,6 +50,7 @@ def main():
     image_path = Path(args.image_path)
     image_name = image_path.stem
     image = imread(image_path.as_posix())
+    channels = [[0,0]]
 
     #File structuring
     save_name = args.save_name
@@ -59,9 +60,6 @@ def main():
         save_dir = save_dir / model_path.stem
         image_name = f"{batch_num}_{image_name}"
     os.makedirs(save_dir, exist_ok=True)
-
-    #Whatever this is
-    channels = [[0,0]]
 
     #Kwargs handling
     try:
