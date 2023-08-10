@@ -69,6 +69,7 @@ def main():
     logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
     masks, _, _ = run_predictions(
+        model,
         image,
         progress=True,
         channels=channels,
