@@ -68,13 +68,15 @@ def main():
 
     logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
-    masks, _, _ = run_predictions(
+    masks, flows, style = run_predictions(
         model,
         image,
         progress=True,
         channels=channels,
         **kwargs
     )
+
+    print(type(masks))
 
     logging.info(f"Computed masks shape:{masks.shape}")
 
