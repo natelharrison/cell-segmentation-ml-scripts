@@ -14,9 +14,10 @@ date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
-parser.add_argument('--model', type=str, default='cyto2')
+parser.add_argument('--model', type=str, default=None)
+parser.add_argument('--tile_size', type=int, nargs='+', default=None)
 parser.add_argument('--kwargs', type=str,
-    default='{"diameter": 30, "do_3D": true, "resample": true, "min_size": 5000, "augment": true}')
+    default='{"diameter": 30, "do_3D": true, "resample": true, "min_size": 2000, "augment": true}')
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()
@@ -31,6 +32,13 @@ def load_model(
 ) -> models.CellposeModel:
 
     return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
+
+def run_predictions(model, image, channels, **kwargs):
+    return model.eval(image, progress=True, channels=channels, **kwargs)
+
+
+def tile_image():
+    ...
 
 
 def main():
@@ -60,7 +68,7 @@ def main():
 
     logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
-    masks, flows, styles = model.eval(
+    masks, _, _ = run_predictions(
         image,
         progress=True,
         channels=channels,
