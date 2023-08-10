@@ -1,11 +1,12 @@
 import os
-import argparse
 import json
-from pathlib import Path
 import logging
-from cellpose import models, io
-from cellpose.io import imread
+import argparse
+from pathlib import Path
+from tifffile import imwrite
 from datetime import datetime
+from cellpose.io import imread
+from cellpose import models, io
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
