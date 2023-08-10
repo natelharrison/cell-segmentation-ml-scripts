@@ -38,7 +38,13 @@ def load_model(
         model_path: Path,
         gpu: bool = True
 ) -> models.CellposeModel:
-    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix(), device=torch.device('cpu'))
+    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
+
+
+def initialize_worker(dask_worker):
+    """Initialize each worker by setting CUDA_VISIBLE_DEVICES."""
+    gpu_id = int(dask_worker.name.split('-')[-1])  # Extract GPU ID from worker name
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
 
 
 def run_predictions(model, image, channels, **kwargs):
@@ -60,6 +66,11 @@ def tile_image(image_path: Path):
 
 
 def main():
+    #Dask stuff
+    num_gpus = torch.cuda.device_count()
+    cluster = LocalCluster(n_workers=num_gpus, threads_per_worker=1, worker_init=initialize_worker)
+    client = Client(cluster)
+
     #Load model
     model_path = Path(args.model)
     model = load_model(model_path)
@@ -107,7 +118,7 @@ def main():
     predictions = tile_map.compute()
 
     imwrite(save_dir / save_name, predictions)
-
+    client.close()
 
 if __name__ == '__main__':
     main()
