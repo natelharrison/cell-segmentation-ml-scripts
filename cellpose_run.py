@@ -11,6 +11,8 @@ from tifffile import imwrite
 from datetime import datetime
 from cellpose.io import imread
 from cellpose import models, io
+from dask.distributed import Client, LocalCluster
+
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -56,6 +58,10 @@ def tile_image(image_path: Path):
 
 
 def main():
+    #Dask cluster
+    cluster = LocalCluster(n_workers=2)  # Adjust the number of workers as needed
+    client = Client(cluster)
+
     #Load model
     model_path = Path(args.model)
     model = load_model(model_path)
@@ -103,7 +109,7 @@ def main():
     predictions = tile_map.compute()
 
     imwrite(save_dir / save_name, predictions)
-
+    client.close()
 
 if __name__ == '__main__':
     main()
