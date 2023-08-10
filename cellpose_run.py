@@ -95,11 +95,11 @@ def main():
                                   depth=overlap)
         ...
     else:
-        tile_map = da.map_blocks(run_predictions,
-                                  image_tiles,
-                                  model=model,
-                                  channels=channels,
-                                  kwargs=kwargs)
+        tile_map = da.map_blocks(
+            lambda tile: run_predictions(model, tile, channels, **kwargs),
+            image_tiles,
+            dtype=int
+        )
     predictions = tile_map.compute()
 
     imwrite(save_dir / save_name, predictions)
