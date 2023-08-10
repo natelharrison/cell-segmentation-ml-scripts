@@ -30,8 +30,8 @@ def load_model(
         model_path: Path,
         gpu: bool = True
 ) -> models.CellposeModel:
-
     return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
+
 
 def run_predictions(model, image, channels, **kwargs):
     return model.eval(image, progress=True, channels=channels, **kwargs)
@@ -42,43 +42,45 @@ def tile_image():
 
 
 def main():
+    #Load model
     model_path = Path(args.model)
     model = load_model(model_path)
 
+    #Load image
     image_path = Path(args.image_path)
     image_name = image_path.stem
+    image = imread(image_path.as_posix())
 
+    #File structuring
     save_name = args.save_name
     batch_num = args.batch_num
-
     save_dir = image_path.parent / save_name
     if batch_num is not None:
         save_dir = save_dir / model_path.stem
         image_name = f"{batch_num}_{image_name}"
     os.makedirs(save_dir, exist_ok=True)
 
+    #Whatever this is
     channels = [[0,0]]
-    image = imread(image_path.as_posix())
 
+    #Kwargs handling
     try:
         kwargs = json.loads(args.kwargs)
     except ValueError as e:
         print(f"Error parsing kwargs: {args.kwargs}")
         raise e
-
     logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
+    #Run predictions
     masks, flows, style = run_predictions(
         model,
         image,
         channels,
         **kwargs
     )
-
-    print(type(masks))
-
     logging.info(f"Computed masks shape:{masks.shape}")
 
+    #Save predictions
     io.save_masks(
         images=image,
         masks=masks,
