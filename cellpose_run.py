@@ -38,7 +38,8 @@ def load_model(
 
 
 def run_predictions(model, image, channels, **kwargs):
-    return model.eval(image, progress=True, channels=channels, **kwargs)
+    mask, _, _ =  model.eval(image, progress=True, channels=channels, **kwargs)
+    return mask
 
 
 def tile_image(image_path: Path):
@@ -46,7 +47,7 @@ def tile_image(image_path: Path):
 
     overlap = None
 
-    chunks = None
+    chunks = image.shape
     if args.chunks is not None:
         chunks = args.chunks
         overlap = 64
@@ -92,28 +93,16 @@ def main():
                                   channels=channels,
                                   kwargs=kwargs,
                                   depth=overlap)
+        ...
+    else:
+        tile_map = da.map_blocks(run_predictions,
+                                  image_tiles,
+                                  model=model,
+                                  channels=channels,
+                                  kwargs=kwargs)
+    predictions = tile_map.compute()
 
-
-    masks, flows, style = run_predictions(
-        model,
-        image,
-        channels,
-        **kwargs
-    )
-    logging.info(f"Computed masks shape:{masks.shape}")
-
-    #Save predictions
-    io.save_masks(
-        images=image,
-        masks=masks,
-        flows=flows,
-        file_names=image_name,
-        png=False,
-        tif=True,
-        save_txt=False,
-        channels=channels,
-        savedir=save_dir
-    )
+    imwrite(save_dir / save_name, predictions)
 
 
 if __name__ == '__main__':
