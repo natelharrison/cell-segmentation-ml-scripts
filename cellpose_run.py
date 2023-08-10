@@ -71,8 +71,7 @@ def main():
     masks, flows, style = run_predictions(
         model,
         image,
-        progress=True,
-        channels=channels,
+        channels,
         **kwargs
     )
 
