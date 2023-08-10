@@ -71,7 +71,7 @@ def main():
 
     #Load image info
     image_path = Path(args.image_path)
-    image_name = image_path.stem
+    image_name = image_path.name
 
 
     #File structuring
@@ -112,7 +112,7 @@ def main():
     with ProgressBar():
         predictions = tile_map.compute()
 
-    imwrite(save_dir / save_name, predictions)
+    imwrite(save_dir / image_name, predictions)
     client.close()
 
 if __name__ == '__main__':
