@@ -36,7 +36,7 @@ def load_model(
         model_path: Path,
         gpu: bool = True
 ) -> models.CellposeModel:
-    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
+    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix(), device="cpu")
 
 
 def run_predictions(model, image, channels, **kwargs):
@@ -58,10 +58,6 @@ def tile_image(image_path: Path):
 
 
 def main():
-    #Dask cluster
-    cluster = LocalCluster(n_workers=2)  # Adjust the number of workers as needed
-    client = Client(cluster)
-
     #Load model
     model_path = Path(args.model)
     model = load_model(model_path)
@@ -109,7 +105,7 @@ def main():
     predictions = tile_map.compute()
 
     imwrite(save_dir / save_name, predictions)
-    client.close()
+
 
 if __name__ == '__main__':
     main()
