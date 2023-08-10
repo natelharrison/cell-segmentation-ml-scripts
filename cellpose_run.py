@@ -7,6 +7,8 @@ import argparse
 import dask.array as da
 
 from pathlib import Path
+
+import torch
 from tifffile import imwrite
 from datetime import datetime
 from cellpose.io import imread
@@ -36,7 +38,7 @@ def load_model(
         model_path: Path,
         gpu: bool = True
 ) -> models.CellposeModel:
-    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix(), device="cpu")
+    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix(), device=torch.device('cpu'))
 
 
 def run_predictions(model, image, channels, **kwargs):
