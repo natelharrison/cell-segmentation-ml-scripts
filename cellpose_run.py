@@ -15,6 +15,7 @@ from dask.distributed import Client, progress
 from dask.diagnostics import ProgressBar
 from dask_cuda import LocalCUDACluster
 
+os.environ['MALLOC_TRIM_THRESHOLD_'] = '65536'
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
