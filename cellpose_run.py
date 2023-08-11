@@ -1,7 +1,6 @@
 import os
 import json
-import dask
-import torch
+import tqdm
 import logging
 import argparse
 
@@ -43,8 +42,11 @@ def load_model(
 
 
 def run_predictions(model, image, channels, **kwargs):
+    tqdm.tqdm.disable = True
     mask, _, _ =  model.eval(image, channels=channels, batch_size=200, **kwargs)
+    tqdm.tqdm.disable = False
     return mask
+
 
 
 def tile_image(image_path: Path):
@@ -62,58 +64,58 @@ def tile_image(image_path: Path):
 
 def main():
     #Dask stuff
-    cluster = LocalCUDACluster()
-    client = Client(cluster)
+    with LocalCUDACluster() as cluster:
+        with Client(cluster) as client:
 
-    #Load model
-    model_path = Path(args.model)
-    model = load_model(model_path)
+            #Load model
+            model_path = Path(args.model)
+            model = load_model(model_path)
 
-    #Load image info
-    image_path = Path(args.image_path)
-    image_name = image_path.name
+            #Load image info
+            image_path = Path(args.image_path)
+            image_name = image_path.name
 
 
-    #File structuring
-    save_name = args.save_name
-    batch_num = args.batch_num
-    save_dir = image_path.parent / save_name
-    if batch_num is not None:
-        save_dir = save_dir / model_path.stem
-        image_name = f"{batch_num}_{image_name}"
-    os.makedirs(save_dir, exist_ok=True)
+            #File structuring
+            save_name = args.save_name
+            batch_num = args.batch_num
+            save_dir = image_path.parent / save_name
+            if batch_num is not None:
+                save_dir = save_dir / model_path.stem
+                image_name = f"{batch_num}_{image_name}"
+            os.makedirs(save_dir, exist_ok=True)
 
-    #Kwargs handling
-    try:
-        kwargs = json.loads(args.kwargs)
-    except ValueError as e:
-        print(f"Error parsing kwargs: {args.kwargs}")
-        raise e
-    logging.info(f"Running cellpose with following kwargs: {kwargs}")
+            #Kwargs handling
+            try:
+                kwargs = json.loads(args.kwargs)
+            except ValueError as e:
+                print(f"Error parsing kwargs: {args.kwargs}")
+                raise e
+            logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
-    #Run predictions on tiles image
-    channels = [[0, 0]]
-    image_tiles, overlap = tile_image(image_path)
+            #Run predictions on tiles image
+            channels = [[0, 0]]
+            image_tiles, overlap = tile_image(image_path)
 
-    if overlap is not None:
-        tile_map = da.map_overlap(
-            lambda tile: run_predictions(model, tile, channels, **kwargs),
-            image_tiles,
-            depth=overlap,
-            dtype=int
-        )
-        ...
-    else:
-        tile_map = da.map_blocks(
-            lambda tile: run_predictions(model, tile, channels, **kwargs),
-            image_tiles,
-            dtype=int
-        )
-    with ProgressBar():
-        predictions = tile_map.compute()
+            if overlap is not None:
+                tile_map = da.map_overlap(
+                    lambda tile: run_predictions(model, tile, channels, **kwargs),
+                    image_tiles,
+                    depth=overlap,
+                    dtype=int
+                )
+                ...
+            else:
+                tile_map = da.map_blocks(
+                    lambda tile: run_predictions(model, tile, channels, **kwargs),
+                    image_tiles,
+                    dtype=int
+                )
+            with ProgressBar():
+                predictions = tile_map.compute()
 
-    imwrite(save_dir / image_name, predictions)
-    client.close()
+            imwrite(save_dir / image_name, predictions)
+
 
 if __name__ == '__main__':
     main()
