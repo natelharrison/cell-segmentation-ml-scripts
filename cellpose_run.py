@@ -67,7 +67,7 @@ def tile_image(image_path: Path):
 
 def main():
     #Dask stuff
-    with LocalCUDACluster() as cluster:
+    with LocalCUDACluster(threads_per_worker=1) as cluster:
         with Client(cluster) as client:
             pbar = ProgressBar()
             pbar.register()
