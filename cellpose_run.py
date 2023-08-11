@@ -68,7 +68,8 @@ def main():
     #Dask stuff
     with LocalCUDACluster() as cluster:
         with Client(cluster) as client:
-            progress(client)
+            pbar = ProgressBar()
+            pbar.register()
 
             #Load model
             model_path = Path(args.model)
