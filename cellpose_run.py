@@ -62,7 +62,7 @@ def tile_image(image_path: Path):
 
     if args.chunks is not None:
         chunks = args.chunks
-        overlap = 64
+        overlap = 128
     tiles = da.from_array(image, chunks=chunks)
     return tiles, overlap
 
@@ -81,7 +81,6 @@ def main():
             #Load image info
             image_path = Path(args.image_path)
             image_name = image_path.name
-
 
             #File structuring
             save_name = args.save_name
@@ -119,7 +118,7 @@ def main():
                     dtype=int
                 )
             with ProgressBar():
-                predictions = tile_map.compute()
+                predictions = tile_map.persist()
 
             imwrite(save_dir / image_name, predictions)
 
