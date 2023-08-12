@@ -11,8 +11,8 @@ from pathlib import Path
 from tifffile import imwrite
 from datetime import datetime
 from cellpose.io import imread
-from cellpose import models, io
-from dask.distributed import Client, progress
+from cellpose import models
+from dask.distributed import Client
 from dask.diagnostics import ProgressBar
 from dask_cuda import LocalCUDACluster
 
