@@ -46,6 +46,7 @@ def run_predictions(model, image, channels, **kwargs):
     logging.getLogger('cellpose').setLevel(logging.WARNING)
     tqdm.tqdm.disable = True
     mask, _, _ =  model.eval(image, channels=channels, batch_size=64, **kwargs)
+    del image
     tqdm.tqdm.disable = False
     logging.getLogger('cellpose').setLevel(logging.INFO)
     return mask
