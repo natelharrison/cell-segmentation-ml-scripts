@@ -1,3 +1,4 @@
+import gc
 import os
 import json
 import tqdm
@@ -46,19 +47,19 @@ def run_predictions(model, image, channels, **kwargs):
     logging.getLogger('cellpose').setLevel(logging.WARNING)
     tqdm.tqdm.disable = True
     mask, _, _ =  model.eval(image, channels=channels, batch_size=64, **kwargs)
-    del image
     tqdm.tqdm.disable = False
     logging.getLogger('cellpose').setLevel(logging.INFO)
-    return mask
 
+    del image
+    gc.collect()
+    return mask
 
 
 def tile_image(image_path: Path):
     image = imread(image_path.as_posix())
-
     overlap = None
-
     chunks = image.shape
+
     if args.chunks is not None:
         chunks = args.chunks
         overlap = 64
@@ -99,7 +100,7 @@ def main():
                 raise e
             logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
-            #Run predictions on tiles image
+            #Run predictions on tiles image using Dask
             channels = [[0, 0]]
             image_tiles, overlap = tile_image(image_path)
 
