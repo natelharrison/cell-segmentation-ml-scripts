@@ -83,7 +83,7 @@ def main():
             make_dir(script_save_dir, remove_dir=False)
 
             batch_num = i
-            log_path = (script_save_dir / f"batch_{i}").as_posix()
+            log_path = (script_save_dir / f"batch_{i}" / '.log').as_posix()
 
             formatted_batch_script = batch_script.format(
                 log_path = log_path,
