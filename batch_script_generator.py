@@ -16,32 +16,30 @@ parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
 
 kwargs_list = [
-    # {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
-    # {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
-    # {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    {"diameter": 0, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
     {"diameter": 0, "do_3D": True, "resample": False, "min_size": 5000, "augment": False},
 
-    # {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
-    # {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
-    # {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    {"diameter": 30, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
     {"diameter": 30, "do_3D": True, "resample": False, "min_size": 5000, "augment": False},
 
-    # {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
-    # {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
-    # {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
+    {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": True},
+    {"diameter": 60, "do_3D": True, "resample": True, "min_size": 5000, "augment": False},
+    {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": True},
     {"diameter": 60, "do_3D": True, "resample": False, "min_size": 5000, "augment": False}
 ]
 
 model_list = [
-    # 64_combined epoch 200
+    # 64_combined epoch
     ("/clusterfs/fiona/segmentation_curation/training_data/combined_dataset/64_no_overlap/models/"
      "cellpose_residual_on_style_on_concatenation_off_64_no_overlap_2023_08_03_16_09_17.755759"),
-    # 128_combined epoch 400
+    # 128_combined epoch
     ("/clusterfs/fiona/segmentation_curation/training_data/combined_dataset/128_64_overlap/models/"
      "cellpose_residual_on_style_on_concatenation_off_128_64_overlap_2023_08_03_01_23_59.133837"),
-    # 64_default
-    ("/clusterfs/fiona/segmentation_curation/cellpose_training/trained_models/training_trial_2/"
-     "cellpose_residual_on_style_on_concatenation_off_cropping_output_2023_07_01_18_46_14.616214")
+
 ]
 
 batch_script = """#!/bin/sh
