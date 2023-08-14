@@ -27,7 +27,7 @@ parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--chunks', type=int, nargs='+', default=None)
 parser.add_argument('--kwargs', type=str,
-    default='{"diameter": 0, "do_3D": true, "min_size": 4000, "augment": true}')
+    default='{"diameter": 0, "do_3D": true, "min_size": 5000, "augment": true}')
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()

@@ -91,7 +91,7 @@ def get_tiles(
         strides = window_size
 
     if args.remove_label and 'mask' in image_path.stem:
-        image = remove_label(image)
+        remove_label(image)
 
     print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
