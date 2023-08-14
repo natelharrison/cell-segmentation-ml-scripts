@@ -114,7 +114,7 @@ def main():
                     dtype=int
                 )
             with ProgressBar():
-                predictions = tile_map.persist()
+                predictions = tile_map.compute()
 
             imwrite(save_dir / image_name, predictions)
 
