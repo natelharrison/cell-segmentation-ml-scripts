@@ -27,7 +27,7 @@ parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--chunks', type=int, nargs='+', default=None)
 parser.add_argument('--kwargs', type=str,
-    default='{"diameter": 30, "do_3D": true, "min_size": 5000, "augment": true}')
+                    default='{"diameter": 30, "do_3D": true, "min_size": 2000, "augment": true, "normalize": false}')
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()
@@ -44,7 +44,7 @@ def load_model(
 
 
 def run_predictions(model, image, channels, **kwargs):
-    mask, _, _ =  model.eval(image, channels=channels, batch_size=128, **kwargs)
+    mask, _, _ = model.eval(image, channels=channels, batch_size=128, **kwargs)
 
     del image
     gc.collect()
@@ -64,21 +64,21 @@ def tile_image(image_path: Path):
 
 
 def main():
-    #Dask stuff
+    # Dask stuff
     with LocalCUDACluster(threads_per_worker=1) as cluster:
         with Client(cluster) as client:
             pbar = ProgressBar()
             pbar.register()
 
-            #Load model
+            # Load model
             model_path = Path(args.model)
             model = load_model(model_path)
 
-            #Load image info
+            # Load image info
             image_path = Path(args.image_path)
             image_name = image_path.name
 
-            #File structuring
+            # File structuring
             save_name = args.save_name
             batch_num = args.batch_num
             save_dir = image_path.parent / save_name
@@ -87,7 +87,7 @@ def main():
                 image_name = f"{batch_num}_{image_name}"
             os.makedirs(save_dir, exist_ok=True)
 
-            #Kwargs handling
+            # Kwargs handling
             try:
                 kwargs = json.loads(args.kwargs)
             except ValueError as e:
@@ -95,7 +95,7 @@ def main():
                 raise e
             logging.info(f"Running cellpose with following kwargs: {kwargs}")
 
-            #Run predictions on tiles image using Dask
+            # Run predictions on tiles image using Dask
             channels = [[0, 0]]
             image_tiles, overlap = tile_image(image_path)
 
