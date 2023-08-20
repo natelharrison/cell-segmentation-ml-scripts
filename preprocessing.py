@@ -95,6 +95,9 @@ def get_tiles(
 
     print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
+    dims = 3
+    if args.crop_size[0] != 1:
+        dims = 1
     for axis in range(3):
         # Rotate the image array along the current axis
         rotated_image = np.rot90(image, axes=(axis, (axis + 1) % 3))
