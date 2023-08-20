@@ -104,8 +104,10 @@ def get_tiles(
     for axis in range(dims):
         # Rotate the image array along the current axis
         if args.crop_size[0] != 1:
+            print("hello")
             rotated_image = np.rot90(image, axes=(axis, (axis + 1) % 3))
         else:
+            print("not rotating")
             rotated_image = image
 
         print(rotated_image.shape)
