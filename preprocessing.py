@@ -123,6 +123,7 @@ def get_tiles(
         # Define plane names
         plane_names = ['XY', 'ZY', 'ZX']
 
+        tiles_skipped = 0
         for i, (z, y, x) in enumerate(itertools.product(
                 range(z_tiles), range(n_rows), range(n_cols),
                 desc=f"Locating tiles in {plane_names[axis]}: {[windows.shape[0]]}",
@@ -130,12 +131,18 @@ def get_tiles(
                 unit=' tile',
         )):
             # Include the plane name in the tile name
-            tile = f"{plane_names[axis]}_z{z}-y{y}-x{x}_{image_path.stem}"
-            if i in test_indices:
-                imwrite(test_path / f"{tile}.tif", windows[i])
-            else:
-                imwrite(save_path / f"{tile}.tif", windows[i])
+            tile_name = f"{plane_names[axis]}_z{z}-y{y}-x{x}_{image_path.stem}"
+            tile = windows[i]
 
+            if tile.shape != window_size:
+                tiles_skipped += 1
+                continue
+
+            if i in test_indices:
+                imwrite(test_path / f"{tile_name}.tif", windows[i])
+            else:
+                imwrite(save_path / f"{tile_name}.tif", windows[i])
+        print(f"{tiles_skipped} tiles discarded in axis {axis}")
 
 def main():
     # Start timer
