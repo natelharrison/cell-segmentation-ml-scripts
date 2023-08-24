@@ -136,7 +136,7 @@ def get_tiles(
 
             if tile.shape != window_size[1:]:
                 print(tile.shape)
-                print(window_size[1:])
+                print(window_size)
                 tiles_skipped += 1
                 continue
 
