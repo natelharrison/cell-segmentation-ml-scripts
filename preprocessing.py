@@ -134,9 +134,7 @@ def get_tiles(
             tile_name = f"{plane_names[axis]}_z{z}-y{y}-x{x}_{image_path.stem}"
             tile = windows[i]
 
-            if tile.shape != window_size[1:]:
-                print(tile.shape)
-                print(window_size)
+            if list(tile.shape) != window_size[1:]:
                 tiles_skipped += 1
                 continue
 
