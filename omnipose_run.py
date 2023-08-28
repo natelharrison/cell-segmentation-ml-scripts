@@ -32,7 +32,7 @@ def load_model(
         **kwargs
 ) -> models.CellposeModel:
     return models.CellposeModel(
-        model_type="omni_test",
+        pretrained_model="omni_test",
         **kwargs
     )
 
