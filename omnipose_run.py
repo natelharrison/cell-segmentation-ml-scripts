@@ -75,7 +75,7 @@ def main():
         cluster=False,
         verbose=True,
         tile=False,
-        channels=[0,0],
+        channels=None,
         rescale=None,
         flow_factor=10,
         diameter=None,
