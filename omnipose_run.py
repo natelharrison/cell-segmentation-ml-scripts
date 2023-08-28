@@ -32,7 +32,7 @@ def load_model(
         **kwargs
 ) -> models.CellposeModel:
     return models.CellposeModel(
-        pretrained_model=model_path.as_posix(),
+        model_type=model_path.as_posix(),
         **kwargs
     )
 
@@ -65,7 +65,7 @@ def main():
     # Load image info
     image_path = Path(args.image_path)
     image_name = image_path.name
-    image = [io.imread(image_path.as_posix())]
+    image = io.imread(image_path.as_posix())
 
     #Run predictions
     mask, _ = run_predictions(
