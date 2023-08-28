@@ -58,7 +58,7 @@ def main():
         nchan=1,
         nclasses=2,
         diam_mean=0,
-        use_GPU=True,
+        GPU=True,
 
     )
 
