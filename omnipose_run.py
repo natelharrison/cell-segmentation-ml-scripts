@@ -65,13 +65,19 @@ def main():
     # Load image info
     image_path = Path(args.image_path)
     image_name = image_path.name
-    image = io.imread(image_path.as_posix())
+    image = [io.imread(image_path.as_posix())]
 
     #Run predictions
     mask, _ = run_predictions(
         model,
         image,
         omni=True,
+        cluster=False,
+        verbose=True,
+        tile=False,
+        chans=None,
+        rescale=None,
+        flow_factor=10,
         diameter=None,
         net_avg=False,
         min_size=4000,
