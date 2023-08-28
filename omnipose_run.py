@@ -32,7 +32,7 @@ def load_model(
         **kwargs
 ) -> models.CellposeModel:
     return models.CellposeModel(
-        model_type=model_path.as_posix(),
+        model_type="omni_test",
         **kwargs
     )
 
