@@ -1,88 +1,94 @@
 import os
-import torch
 
+import tifffile
+import torch
+import argparse
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 
 from pathlib import Path
 from cellpose_omni import io
+from datetime import datetime
 from cellpose_omni import models
-from cellpose_omni import models, core
 from omnipose.utils import normalize99
 from cellpose_omni import io, transforms
 
 
-# This checks to see if you have set up your GPU properly.
-# CPU performance is a lot slower, but not a problem if you
-# are only processing a few images.
-use_GPU = core.use_gpu()
-print('>>> GPU activated? %d'%use_GPU)
+now = datetime.now()
+date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
-# for plotting
-mpl.rcParams['figure.dpi'] = 300
-plt.style.use('dark_background')
+parser = argparse.ArgumentParser()
+parser.add_argument('--dir', type=str, default='')
+parser.add_argument('--image_path', type=str, default='')
+parser.add_argument('--model', type=str, default=None)
+parser.add_argument('--chunks', type=int, nargs='+', default=None)
+parser.add_argument('--kwargs', type=str, default=None)
+parser.add_argument('--save_name', type=str, default=date_string)
+parser.add_argument('--batch_num', type=str, default=None)
+args = parser.parse_args()
 
 
-basedir = os.path.join(Path.cwd().parent,'test_files_3D')
-files = io.get_image_files(basedir)
+def load_model(
+        model_path: Path,
+        **kwargs
+) -> models.CellposeModel:
+    return models.CellposeModel(
+        pretrained_model=model_path.as_posix(),
+        **kwargs
+    )
 
-imgs = [io.imread(f) for f in files]
+def run_predictions(
+        model: models.CellposeModel,
+        image: np.ndarray,
+        **kwargs
+):
+    masks, flows, _ = model.eval(
+        image,
+        **kwargs
+    )
 
-# print some info about the images.
-for i in imgs:
-    print('Original image shape:',i.shape)
-    print('data type:',i.dtype)
-    print('data range:', i.min(),i.max())
-nimg = len(imgs)
-print('number of images:',nimg)
+    return masks, flows
 
-model_name = 'plant_omni'
 
-dim = 3
-nclasses = 3 # flow + dist + boundary
-nchan = 1
-omni = 1
-rescale = False
-diam_mean = 0
-use_GPU = 0 # Most people do not have enough VRAM to run on GPU... 24GB not enough for this image, need nearly 48GB
-model = models.CellposeModel(gpu=use_GPU, model_type=model_name, net_avg=False,
-                             diam_mean=diam_mean, nclasses=nclasses, dim=dim, nchan=nchan)
+def main():
+    #Load model
+    model_path = Path(args.model)
+    model = load_model(
+        model_path,
+        dim=3,
+        nchan=1,
+        nclasses=2,
+        diam_mean=0,
+        use_GPU=True,
 
-torch.cuda.empty_cache()
-mask_threshold = -5 #usually this is -1
-flow_threshold = 0.
-diam_threshold = 12
-net_avg = False
-cluster = False
-verbose = 1
-tile = True
-chans = None
-compute_masks = 1
-resample=False
-rescale=None
-omni=True
-flow_factor = 10 # multiple to increase flow magnitude, useful in 3D
-transparency = True
+    )
 
-nimg = len(imgs)
-masks_om, flows_om = [[]]*nimg,[[]]*nimg
+    # Load image info
+    image_path = Path(args.image_path)
+    image_name = image_path.name
+    image = io.imread(image_path.as_posix())
 
-# splitting the images into batches helps manage VRAM use so that memory can get properly released
-# here we have just one image, but most people will have several to process
-for k in range(nimg):
-    masks_om[k], flows_om[k], _ = model.eval(imgs[k],
-                                             channels=chans,
-                                             rescale=rescale,
-                                             mask_threshold=mask_threshold,
-                                             net_avg=net_avg,
-                                             transparency=transparency,
-                                             flow_threshold=flow_threshold,
-                                             omni=omni,
-                                             resample=resample,
-                                             verbose=verbose,
-                                             diam_threshold=diam_threshold,
-                                             cluster=cluster,
-                                             tile=tile,
-                                             compute_masks=compute_masks,
-                                             flow_factor=flow_factor) 
+    #Run predictions
+    mask, _ = run_predictions(
+        model,
+        image,
+        omni=True,
+        diameter=None,
+        net_average=False,
+        min_size=4000,
+        transparency=True
+    )
+
+    #Save masks
+    save_name = f"{image_name}_predicted_masks"
+    save_path = image_path.parent / save_name
+    tifffile.imwrite()
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+
+
