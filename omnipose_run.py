@@ -66,6 +66,7 @@ def main():
     image_path = Path(args.image_path)
     image_name = image_path.name
     image = io.imread(image_path.as_posix())
+    print(f"Read image with shape: {image.shape}")
 
     #Run predictions
     mask, _ = run_predictions(
