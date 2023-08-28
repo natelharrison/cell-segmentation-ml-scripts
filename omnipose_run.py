@@ -73,7 +73,7 @@ def main():
         image,
         omni=True,
         diameter=None,
-        net_average=False,
+        net_avg=False,
         min_size=4000,
         transparency=True
     )
