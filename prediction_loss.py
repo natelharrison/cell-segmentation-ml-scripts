@@ -10,13 +10,14 @@ parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--labels', type=str, default='')
 args = parser.parse_args()
 
+
 def list_files(directory):
-    files = []
     base_dir = Path(directory)
-    for file in base_dir.rglob('*'):
-        if file.is_file() and file.parent != base_dir:
-            files.append(file)
-    return files
+    return [
+        file
+        for file in base_dir.rglob('*')
+        if file.is_file() and file.parent != base_dir
+    ]
 
 
 def dice_loss(true, preds):
@@ -28,7 +29,6 @@ def dice_loss(true, preds):
         intersection = np.sum(true_binary * preds_binary)
         dice += (2. * intersection) / (np.sum(true_binary) + np.sum(preds_binary))
     return 1 - dice / num_classes
-
 
 
 def main():
@@ -44,7 +44,6 @@ def main():
 
         loss = dice_loss(labels, prediction)
         print(f"File: {file.as_posix()}, Loss: {loss}")
-
 
 
 if __name__ == '__main__':
