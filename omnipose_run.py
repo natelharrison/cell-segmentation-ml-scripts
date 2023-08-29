@@ -76,13 +76,14 @@ def main():
         cluster=False,
         verbose=True,
         tile=True,
-        channels=[0,0],
+        channels=None,
         rescale=None,
         flow_factor=10,
         diameter=None,
         net_avg=False,
         min_size=4000,
-        transparency=True
+        transparency=True,
+        flow_threshold=0
     )
 
     #Save masks
