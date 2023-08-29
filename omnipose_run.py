@@ -58,7 +58,7 @@ def main():
         nchan=1,
         nclasses=2,
         diam_mean=0,
-        gpu=True,
+        gpu=False,
 
     )
 
@@ -73,7 +73,6 @@ def main():
         model,
         image,
         omni=True,
-        batch_size=2,
         cluster=False,
         verbose=True,
         tile=True,
