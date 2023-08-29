@@ -79,7 +79,7 @@ def main():
         channels=None,
         rescale=None,
         flow_factor=5,
-        normalize=False,
+        normalize=True,
         diameter=None,
         augment=True,
         mask_threshold=-5,
