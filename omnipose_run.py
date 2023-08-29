@@ -79,7 +79,10 @@ def main():
         channels=None,
         rescale=None,
         flow_factor=10,
+        normalize=False,
         diameter=None,
+        augment=True,
+        mask_threshold=-0.5,
         net_avg=False,
         min_size=4000,
         transparency=True,
@@ -87,7 +90,7 @@ def main():
     )
 
     #Save masks
-    save_name = f"{image_name}_predicted_masks"
+    save_name = f"{image_name}_predicted_masks.tif"
     save_path = image_path.parent / save_name
     tifffile.imwrite(save_path, mask)
 
