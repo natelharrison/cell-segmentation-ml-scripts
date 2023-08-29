@@ -89,7 +89,7 @@ def main():
     #Save masks
     save_name = f"{image_name}_predicted_masks"
     save_path = image_path.parent / save_name
-    tifffile.imwrite()
+    tifffile.imwrite(save_path, mask)
 
 
 if __name__ == '__main__':
