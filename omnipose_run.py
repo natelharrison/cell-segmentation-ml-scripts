@@ -73,6 +73,7 @@ def main():
         model,
         image,
         omni=True,
+        batch_size=2,
         cluster=False,
         verbose=True,
         tile=True,
