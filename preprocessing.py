@@ -1,16 +1,15 @@
-import itertools
-import logging
 import os
-import re
 import time
+import logging
 import argparse
+import itertools
 
 import numpy as np
 
 from pathlib import Path
 from shutil import rmtree
-from tifffile import imread, imwrite
 from tqdm.contrib import itertools
+from tifffile import imread, imwrite
 from numpy.lib.stride_tricks import sliding_window_view
 
 parser = argparse.ArgumentParser()
@@ -96,10 +95,7 @@ def get_tiles(
     print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
 
-    if args.crop_size[0] != 1:
-        dims = 1
-    else:
-        dims = 3
+    dims = 1 if args.crop_size[0] != 1 else 3
 
     for axis in range(dims):
         # Rotate the image array along the current axis
