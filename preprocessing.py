@@ -134,9 +134,9 @@ def get_tiles(
                 continue
 
             if i in test_indices:
-                imwrite(test_path / f"{tile_name}.tif", windows[i])
+                imwrite(test_path / f"{tile_name}.tif", tile)
             else:
-                imwrite(save_path / f"{tile_name}.tif", windows[i])
+                imwrite(save_path / f"{tile_name}.tif", tile)
         print(f"{tiles_skipped} tiles discarded in axis {axis}")
 
 def main():
