@@ -12,7 +12,6 @@ from cellpose_omni import models
 from omnipose.utils import normalize99
 from cellpose_omni import io, transforms
 
-
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -27,39 +26,24 @@ parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()
 
 
-def load_model(
-        model_path: Path,
-        **kwargs
-) -> models.CellposeModel:
+def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
     return models.CellposeModel(
-        pretrained_model=model_path.as_posix(),
-        **kwargs
+        pretrained_model=model_path.as_posix(), **kwargs
     )
+
 
 def run_predictions(
-        model: models.CellposeModel,
-        image: np.ndarray,
-        **kwargs
+        model: models.CellposeModel, image: np.ndarray, **kwargs
 ):
-    masks, flows, _ = model.eval(
-        image,
-        **kwargs
-    )
-
+    masks, flows, _ = model.eval(image, **kwargs)
     return masks, flows
 
 
 def main():
-    #Load model
+    # Load model
     model_path = Path(args.model)
     model = load_model(
-        model_path,
-        dim=3,
-        nchan=1,
-        nclasses=2,
-        diam_mean=0,
-        gpu=True,
-
+        model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True,
     )
 
     # Load image info
@@ -68,28 +52,35 @@ def main():
     image = io.imread(image_path.as_posix())
     print(f"Read image with shape: {image.shape}")
 
-    #Run predictions
+    # Run predictions
     mask, _ = run_predictions(
         model,
         image,
+
+        compute_masks=True,
         omni=True,
-        cluster=False,
+        augment=True,
+        suppress=False,
         verbose=True,
         tile=True,
-        channels=None,
-        rescale=None,
+        niter=150,
+        batch_size=6,
         flow_factor=10,
+        mask_threshold=5,
+        flow_threshold=-5,
+        bsize=224,
+        rescale=None,
+        channels=None,
         normalize=True,
         diameter=None,
-        augment=False,
-        # mask_threshold=-5,
-        net_avg=False,
         min_size=4000,
+        diam_threshold=30,
+        cluster=False,
+        net_avg=False,
         transparency=True,
-        flow_threshold=0
     )
 
-    #Save masks
+    # Save masks
     save_name = f"{image_name}_predicted_masks.tif"
     save_path = image_path.parent / save_name
     tifffile.imwrite(save_path, mask)
@@ -97,9 +88,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
