@@ -59,7 +59,7 @@ def main():
         verbose=True,
         tile=True,
         niter=170,
-        batch_size=6,
+        batch_size=1,
         flow_factor=1,
         mask_threshold=0,
         flow_threshold=0,
