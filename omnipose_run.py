@@ -1,16 +1,11 @@
-import os
-
-import tifffile
-import torch
 import argparse
+import tifffile
 import numpy as np
 
 from pathlib import Path
-from cellpose_omni import io
 from datetime import datetime
+from cellpose_omni import io
 from cellpose_omni import models
-from omnipose.utils import normalize99
-from cellpose_omni import io, transforms
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -64,9 +59,9 @@ def main():
         verbose=True,
         tile=True,
         niter=150,
-        batch_size=8,
+        batch_size=4,
         flow_factor=10,
-        mask_threshold=5,
+        mask_threshold=0,
         flow_threshold=-5,
         rescale=None,
         channels=None,
@@ -74,7 +69,7 @@ def main():
         diameter=None,
         min_size=4000,
         diam_threshold=30,
-        cluster=False,
+        cluster=True,
         net_avg=False,
         transparency=True,
     )
