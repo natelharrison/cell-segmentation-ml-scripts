@@ -37,8 +37,6 @@ def run_predictions(
 
 
 def main():
-    use_GPU = core.use_gpu()
-    print('>>> GPU activated? %d' % use_GPU)
     torch.cuda.empty_cache()
 
     # Load model
