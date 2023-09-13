@@ -66,8 +66,6 @@ def run_predictions(
 
 
 def main():
-    torch.cuda.empty_cache()
-
     # Load model
     model_path = Path(args.model)
     model = load_model(
