@@ -54,7 +54,7 @@ def main():
 
         compute_masks=True,
         omni=True,
-        augment=True,
+        augment=False,
         suppress=False,
         verbose=True,
         tile=True,
