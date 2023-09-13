@@ -58,7 +58,7 @@ def main():
         suppress=False,
         verbose=True,
         tile=True,
-        niter=150,
+        niter=170,
         batch_size=8,
         flow_factor=10,
         mask_threshold=0,
@@ -69,7 +69,7 @@ def main():
         diameter=None,
         min_size=4000,
         diam_threshold=30,
-        cluster=True,
+        cluster=False,
         net_avg=False,
         transparency=True,
     )
