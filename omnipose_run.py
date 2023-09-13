@@ -1,4 +1,6 @@
 import argparse
+
+import omnipose
 import tifffile
 import numpy as np
 
@@ -48,32 +50,71 @@ def main():
     print(f"Read image with shape: {image.shape}")
 
     # Run predictions
-    mask, _ = run_predictions(
+    mask, flow = run_predictions(
         model,
         image,
-
         compute_masks=True,
         omni=True,
-        augment=False,
-        suppress=False,
+        batch_size=6,
+        niter=1,
+        cluster=False,
         verbose=True,
         tile=True,
-        niter=170,
-        batch_size=1,
-        flow_factor=1,
-        mask_threshold=0,
-        flow_threshold=0,
         bsize=224,
-        rescale=None,
         channels=None,
+        rescale=None,
+        flow_factor=10,
         normalize=True,
         diameter=None,
-        min_size=4000,
-        diam_threshold=30,
-        cluster=False,
+        augment=True,
+        mask_threshold=1,
         net_avg=False,
+        min_size=4000,
         transparency=True,
+        flow_threshold=-5
     )
+    masks = [mask]
+    flows = [flow]
+
+    k = 0
+    dP = flows[k][1]
+    dist = flows[k][2]
+    # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
+    ret = omnipose.core.compute_masks(
+        dP,
+        dist,
+        bd=None,
+        p=None,
+        inds=None,
+        niter=150,
+        rescale=1.0,
+        resize=None,
+        mask_threshold=0,  # raise this higher to recede boundaries
+        diam_threshold=25,
+        flow_threshold=0,
+        interp=True,
+        cluster=False,  # speed and less undersegmentation
+        boundary_seg=False,
+        affinity_seg=False,
+        do_3D=False,
+        min_size=4000,
+        max_size=None,
+        hole_size=None,
+        omni=True,
+        calc_trace=False,
+        verbose=True,
+        use_gpu=True,
+        device=model.device,
+        nclasses=2,
+        dim=3,
+        suppress=False,  # this option opened up now
+        eps=None,
+        hdbscan=False,
+        flow_factor=1,  # not needed with supression off and niter set manually
+        debug=False,
+        override=False)
+
+    masks[k] = ret[0]
 
     # Save masks
     save_name = f"{image_name}_predicted_masks.tif"
