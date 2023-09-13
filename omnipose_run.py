@@ -1,12 +1,12 @@
 import argparse
-
+import torch
 import omnipose
 import tifffile
 import numpy as np
 
 from pathlib import Path
 from datetime import datetime
-from cellpose_omni import io
+from cellpose_omni import io, core
 from cellpose_omni import models
 
 now = datetime.now()
@@ -37,6 +37,10 @@ def run_predictions(
 
 
 def main():
+    use_GPU = core.use_gpu()
+    print('>>> GPU activated? %d' % use_GPU)
+    torch.cuda.empty_cache()
+
     # Load model
     model_path = Path(args.model)
     model = load_model(
