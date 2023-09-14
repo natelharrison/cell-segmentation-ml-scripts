@@ -2,11 +2,9 @@ import os
 import time
 import torch
 import argparse
-import omnipose
 import tifffile
 import threading
 import numpy as np
-import matplotlib.pyplot as plt
 
 from pathlib import Path
 from datetime import datetime
