@@ -79,7 +79,7 @@ def main():
     image = io.imread(image_path.as_posix())
     print(f"Read image with shape: {image.shape}")
 
-    batch_size = 8
+    batch_size = 16
     while True:
         try:
             # Run predictions
@@ -93,7 +93,7 @@ def main():
                 niter=170,
                 cluster=False,
                 verbose=True,
-                tile=False,
+                tile=True,
                 bsize=224,
                 channels=None,
                 rescale=None,
