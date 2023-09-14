@@ -1,3 +1,4 @@
+import os
 import time
 import torch
 import argparse
@@ -16,13 +17,9 @@ now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
-parser.add_argument('--chunks', type=int, nargs='+', default=None)
-parser.add_argument('--kwargs', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
-parser.add_argument('--batch_num', type=str, default=None)
 args = parser.parse_args()
 
 gpu_memory_logs = []
@@ -121,9 +118,10 @@ def main():
             torch.cuda.empty_cache()
 
     # Save masks
-    save_name = f"{image_name}_predicted_masks.tif"
+    save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
     save_dir = image_path.parent / f"{image_name}_predicted_masks"
-    save_path = save_dir / save_name / date_string
+    os.makedirs(save_dir.as_posix(), exist_ok=True)
+    save_path = save_dir / save_name
     print(f"Saving masks to {save_path.as_posix()}")
     tifffile.imwrite(save_path, mask)
 
