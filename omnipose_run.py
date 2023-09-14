@@ -35,21 +35,6 @@ def monitor_gpu(interval=1):
         time.sleep(interval)
 
 
-def plot_memory_usage():
-    num_gpus = torch.cuda.device_count()
-    plt.figure(figsize=(10, 6))
-
-    for i in range(num_gpus):
-        plt.plot([log[i] for log in gpu_memory_logs], label=f'GPU {i}')
-
-    plt.title('GPU Memory Usage Over Time')
-    plt.xlabel('Time (every 2 seconds)')
-    plt.ylabel('Memory Used (MiB)')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
 def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
     return models.CellposeModel(
         pretrained_model=model_path.as_posix(), **kwargs
@@ -118,10 +103,12 @@ def main():  # sourcery skip: remove-redundant-if, remove-unreachable-code
             torch.cuda.empty_cache()
 
     # Save masks
-    save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
     save_dir = image_path.parent / f"{image_name}_predicted_masks"
     os.makedirs(save_dir.as_posix(), exist_ok=True)
+
+    save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
     save_path = save_dir / save_name
+
     print(f"Saving masks to {save_path.as_posix()}")
     tifffile.imwrite(save_path, mask)
 
@@ -134,4 +121,3 @@ if __name__ == '__main__':
 
     stop_event.set()
     t.join()
-    plot_memory_usage()
