@@ -49,7 +49,7 @@ def run_predictions(
     return masks, flows
 
 
-def main():  # sourcery skip: remove-redundant-if, remove-unreachable-code
+def main():
     # Load model
     model_path = Path(args.model)
     model = load_model(
@@ -93,12 +93,14 @@ def main():  # sourcery skip: remove-redundant-if, remove-unreachable-code
             break
 
         except RuntimeError as e:
-            if "out of memory" or "output.numel()" not in str(e):
+            if "out of memory" not in str(e) and "output.numel()" not in str(e):
                 raise e
 
-            if batch_size <= 1:  # Check if batch size is already 1
+            # Check if batch size already 1
+            if batch_size <= 1:
                 raise ValueError("Out of memory error even with batch size of 1") from e
 
+            # Reduce batch size and rerun
             print(f"Batch size of {batch_size} is too large. Halving the batch size...")
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
