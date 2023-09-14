@@ -122,7 +122,8 @@ def main():
 
     # Save masks
     save_name = f"{image_name}_predicted_masks.tif"
-    save_path = image_path.parent / save_name / date_string
+    save_dir = image_path.parent / f"{image_name}_predicted_masks"
+    save_path = save_dir / save_name / date_string
     print(f"Saving masks to {save_path.as_posix()}")
     tifffile.imwrite(save_path, mask)
 
