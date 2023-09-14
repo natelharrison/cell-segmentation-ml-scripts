@@ -31,7 +31,7 @@ gpu_memory_logs = []
 def monitor_gpu(interval=2):
     num_gpus = torch.cuda.device_count()
     while True:
-        mem_info = [torch.cuda.memory_allocated(device=i) / 1024 ** 3 for i in range(num_gpus)]
+        mem_info = [torch.cuda.memory_allocated(device=i) / 1024 ** 2 for i in range(num_gpus)]
         gpu_memory_logs.append(mem_info)
         print(f"GPU Memory Used: {mem_info} GiB")
         time.sleep(interval)
@@ -85,7 +85,7 @@ def main():
         compute_masks=True,
         omni=True,
         batch_size=8,
-        niter=170,
+        niter=1000000,
         cluster=False,
         verbose=True,
         tile=True,
