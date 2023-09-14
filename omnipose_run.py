@@ -84,7 +84,7 @@ def main():
         image,
         compute_masks=True,
         omni=True,
-        batch_size=4,
+        batch_size=8,
         niter=170,
         cluster=False,
         verbose=True,
