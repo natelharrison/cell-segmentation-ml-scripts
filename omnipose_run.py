@@ -26,7 +26,7 @@ gpu_memory_logs = []
 stop_event = threading.Event()
 
 
-def monitor_gpu(interval=15):
+def monitor_gpu(interval=1):
     num_gpus = torch.cuda.device_count()
     while not stop_event.is_set():
         mem_info = [torch.cuda.memory_allocated(device=i) / 1024 ** 3 for i in range(num_gpus)]
