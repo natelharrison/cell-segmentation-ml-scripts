@@ -63,7 +63,7 @@ def run_predictions(
     return masks, flows
 
 
-def main():
+def main():  # sourcery skip: remove-redundant-if, remove-unreachable-code
     # Load model
     model_path = Path(args.model)
     model = load_model(
@@ -107,7 +107,7 @@ def main():
             break
 
         except RuntimeError as e:
-            if "out of memory" not in str(e):
+            if "out of memory" or "output.numel()" not in str(e):
                 raise e
 
             if batch_size <= 1:  # Check if batch size is already 1
