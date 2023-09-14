@@ -69,7 +69,7 @@ def main():
     # Load model
     model_path = Path(args.model)
     model = load_model(
-        model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True,
+        model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True
     )
 
     # Load image info
@@ -78,30 +78,46 @@ def main():
     image = io.imread(image_path.as_posix())
     print(f"Read image with shape: {image.shape}")
 
-    # Run predictions
-    mask, flow = run_predictions(
-        model,
-        image,
-        compute_masks=True,
-        omni=True,
-        batch_size=8,
-        niter=1000000,
-        cluster=False,
-        verbose=True,
-        tile=True,
-        bsize=224,
-        channels=None,
-        rescale=None,
-        flow_factor=10,
-        normalize=True,
-        diameter=None,
-        augment=True,
-        mask_threshold=0,
-        net_avg=False,
-        min_size=4000,
-        transparency=True,
-        flow_threshold=0
-    )
+    batch_size = 8
+    while True:
+        try:
+            # Run predictions
+            mask, flow = run_predictions(
+                model,
+                image,
+                batch_size=batch_size,
+                compute_masks=True,
+                suppress=False,
+                omni=True,
+                niter=170,
+                cluster=False,
+                verbose=True,
+                tile=False,
+                bsize=224,
+                channels=None,
+                rescale=None,
+                flow_factor=10,
+                normalize=True,
+                diameter=None,
+                augment=True,
+                mask_threshold=0,
+                net_avg=False,
+                min_size=4000,
+                transparency=True,
+                flow_threshold=0
+            )
+            break
+
+        except RuntimeError as e:
+            if "out of memory" not in str(e):
+                raise e
+
+            if batch_size <= 1:  # Check if batch size is already 1
+                raise ValueError("Out of memory error even with batch size of 1") from e
+
+            print(f"Batch size of {batch_size} is too large. Halving the batch size...")
+            batch_size = batch_size // 2
+            torch.cuda.empty_cache()
 
     # Save masks
     save_name = f"{image_name}_predicted_masks.tif"
