@@ -115,14 +115,14 @@ def active_countour(
     )
 
     gradient_magnitude = sitk.GradientMagnitudeRecursiveGaussian(
-        itk_image, sigma=1  # Adjust the sigma value for Gaussian smoothing
+        itk_image, sigma=1
     )
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
     img_filter.SetPropagationScaling(-0.5)
-    img_filter.SetCurvatureScaling(10.0)
-    img_filter.SetAdvectionScaling(5.0)
+    img_filter.SetCurvatureScaling(9.0)
+    img_filter.SetAdvectionScaling(6.0)
     img_filter.SetMaximumRMSError(0.01)
     img_filter.SetNumberOfIterations(250)
 
@@ -148,10 +148,12 @@ def main():
     mask: np.ndarray = imread(mask_path)
     labels, pixel_count = np.unique(mask, return_counts=True)
 
+    # Set background to 0 if labeled
     if labels[0] == 1 and pixel_count[0] >= 50000:
         mask[mask == 1] = 0
         print(f"Removed label {labels[0]} of size {pixel_count[0]}")
 
+    # Refine masks using active contour
     refined_mask = np.zeros_like(mask)
     with Pool(processes=args.processes) as pool:
         results = pool.map(
@@ -162,6 +164,7 @@ def main():
     for refined_label, label in results:
         refined_mask[refined_label == 1] = label
 
+    # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
     imwrite(save_path, refined_mask)
 
