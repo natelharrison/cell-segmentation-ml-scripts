@@ -5,6 +5,7 @@ from typing import Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
+import skimage.measure
 
 from numpy import ndarray
 from pathlib import Path
@@ -23,25 +24,26 @@ def get_label_slice(mask: np.ndarray) -> ndarray[int]:
     """
     Get the index of the slice with the most prominent label in a 3D binary mask.
 
-    Parameters:
-    - mask (np.ndarray): The 3D binary mask.
-
-    Returns:
-    ndarray[int]: The index of the prominent slice.
+    :param mask: np.ndarray: The 3D binary mask.
+    :return ndarray[int]: The index of the prominent slice.
     """
     slice_sums = mask.sum(axis=(1, 2))
     return np.argmax(slice_sums)
 
 
-def visualize_3d_slice(image, mask, gradient_magnitude, refined_mask):
+def visualize_3d_slice(
+        image: np.ndarray,
+        mask: np.ndarray,
+        refined_mask: np.ndarray,
+        gradient_magnitude: np.ndarray
+):
     """
     Visualize slices of input image, mask, gradient magnitude, and refined mask.
 
-    Parameters:
-    - image: The input image.
-    - mask: The initial mask.
-    - gradient_magnitude: The gradient magnitude.
-    - refined_mask: The refined mask.
+    :param mask: The initial mask.
+    :param gradient_magnitude: The gradient magnitude.
+    :param image: The input image.
+    :param refined_mask: The refined mask.
     """
     slice_index = get_label_slice(mask)
 
@@ -71,7 +73,56 @@ def visualize_3d_slice(image, mask, gradient_magnitude, refined_mask):
     plt.show()
 
 
+def get_bounding_box(
+        mask: np.ndarray, label: int, buffer: int = 16
+) -> Tuple[int, int, int, int, int, int]:
+    """
+    Returns the bounding box for a given label
+    :param mask:
+    :param label:
+    :param buffer:
+    :return bounding_coords:
+    """
+    props = skimage.measure.regionprops((mask == label).astype(int))
+
+    min_x, min_y, min_z, max_x, max_y, max_z = props[0].bbox
+
+    return (
+        max(0, min_x - buffer),
+        min(mask.shape[0], max_x + buffer),
+        max(0, min_y - buffer),
+        min(mask.shape[1], max_y + buffer),
+        max(0, min_z - buffer),
+        min(mask.shape[2], max_z + buffer)
+    )
+
+
 def process_label(
+        data: Tuple[np.ndarray, np.ndarray, int]
+) -> Tuple[np.ndarray, int]:
+    """
+    Process a label within a Pool of processes.
+    :param data:
+    :return active_contour(), label:
+    """
+    image, mask, label = data
+    print(f"Processing mask {label}")
+    label_mask = (mask == label).astype(np.uint8)
+
+    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(mask, label)
+    cropped_image = image[x_min:x_max, y_min:y_max, z_min:z_max]
+    cropped_mask = label_mask[x_min:x_max, y_min:y_max, z_min:z_max]
+
+    refined_cropped_mask = active_countour(cropped_image, cropped_mask)
+
+    label_mask[
+        x_min: x_max, y_min: y_max, z_min: z_max
+    ] = refined_cropped_mask
+
+    return label_mask, label
+
+
+def process_labels(
         data: Tuple[np.ndarray, np.ndarray, int]
 ) -> Tuple[np.ndarray, int]:
     """
@@ -85,7 +136,7 @@ def process_label(
     """
     image, mask, label = data
     print(f"Processing mask {label}")
-    label_mask = (mask == label).astype(np.uint16)
+    label_mask = (mask == label).astype(np.uint8)
     return active_countour(image, label_mask), label
 
 
@@ -95,13 +146,9 @@ def active_countour(
 ) -> np.ndarray[np.uint8]:
     """
     Perform active contour segmentation on an input image.
-
-    Parameters:
-    - image (np.ndarray): The input image.
-    - binary_mask (np.ndarray): Binary mask for active contour initialization.
-
-    Returns:
-    np.ndarray: The refined binary mask.
+    :param image:
+    :param binary_mask:
+    :return refined_mask as binary array:
     """
     itk_image = sitk.Cast(sitk.GetImageFromArray(image), sitk.sitkFloat32)
     itk_binary_mask = sitk.GetImageFromArray(binary_mask.astype(np.uint8))
