@@ -4,11 +4,13 @@ from typing import Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+import skimage.measure
 import SimpleITK as sitk
 
 from numpy import ndarray
 from pathlib import Path
 from tifffile import imread, imwrite
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
@@ -82,22 +84,18 @@ def get_bounding_box(
     :param buffer:
     :return bounding_coords:
     """
-    indices = np.where(mask == label)
+    props = skimage.measure.regionprops((mask == label).astype(int))
 
-    x_min, x_max = (
-        max(0, min(indices[0]) - buffer),
-        min(max(indices[0]) + buffer, mask.shape[0])
-    )
-    y_min, y_max = (
-        max(0, min(indices[1]) - buffer),
-        min(max(indices[1]) + buffer, mask.shape[1])
-    )
-    z_min, z_max = (
-        max(0, min(indices[2]) - buffer),
-        min(max(indices[2]) + buffer, mask.shape[2])
-    )
+    min_x, min_y, min_z, max_x, max_y, max_z = props[0].bbox
 
-    return x_min, x_max, y_min, y_max, z_min, z_max
+    return (
+        max(0, min_x - buffer),
+        min(mask.shape[0], max_x + buffer),
+        max(0, min_y - buffer),
+        min(mask.shape[1], max_y + buffer),
+        max(0, min_z - buffer),
+        min(mask.shape[2], max_z + buffer)
+    )
 
 
 def process_label(
@@ -122,25 +120,7 @@ def process_label(
         x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_mask
 
-    return label_mask, label
-
-
-def process_labels(
-        data: Tuple[np.ndarray, np.ndarray, int]
-) -> Tuple[np.ndarray, int]:
-    """
-    Process a label within a Pool of processes.
-
-    Parameters:
-    - data (Tuple[np.ndarray, np.ndarray, int]): A tuple containing image, mask, and label.
-
-    Returns:
-    Tuple[np.ndarray, int]: A tuple containing the refined mask and label.
-    """
-    image, mask, label = data
-    print(f"Processing mask {label}")
-    label_mask = (mask == label).astype(np.uint8)
-    return active_countour(image, label_mask), label
+    return refined_cropped_mask, (x_min, x_max, y_min, y_max, z_min, z_max), label
 
 
 def active_countour(
@@ -211,8 +191,10 @@ def main():
             [(image, mask, label) for label in labels[1:]]
         )
 
-    for refined_label, label in results:
-        refined_mask[refined_label == 1] = label
+    for refined_cropped_mask, (x_min, x_max, y_min, y_max, z_min, z_max), label in results:
+        refined_mask[x_min:x_max, y_min:y_max, z_min:z_max][refined_cropped_mask == 1] = label
+
+    refined_mask = skimage.measure.label(refined_mask)
 
     # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
