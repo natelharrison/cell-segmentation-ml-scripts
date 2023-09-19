@@ -33,8 +33,8 @@ def get_label_slice(mask: np.ndarray) -> ndarray[int]:
 
 def visualize_3d_slice(
         image: np.ndarray,
-        gradient_magnitude: np.ndarray,
         mask: np.ndarray,
+        gradient_magnitude: np.ndarray,
         refined_mask: np.ndarray,
 ):
     """
@@ -122,24 +122,6 @@ def process_label(
     return label_mask, label
 
 
-def process_labels(
-        data: Tuple[np.ndarray, np.ndarray, int]
-) -> Tuple[np.ndarray, int]:
-    """
-    Process a label within a Pool of processes.
-
-    Parameters:
-    - data (Tuple[np.ndarray, np.ndarray, int]): A tuple containing image, mask, and label.
-
-    Returns:
-    Tuple[np.ndarray, int]: A tuple containing the refined mask and label.
-    """
-    image, mask, label = data
-    print(f"Processing mask {label}")
-    label_mask = (mask == label).astype(np.uint8)
-    return active_contour(image, label_mask), label
-
-
 def active_contour(
         image: np.ndarray,
         binary_mask: np.ndarray
@@ -167,19 +149,19 @@ def active_contour(
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-4.0)
+    img_filter.SetPropagationScaling(-2.0)
     img_filter.SetCurvatureScaling(10.0)
     img_filter.SetAdvectionScaling(10.0)
-    img_filter.SetMaximumRMSError(0.01)
-    img_filter.SetNumberOfIterations(250)
+    img_filter.SetMaximumRMSError(0.005)
+    img_filter.SetNumberOfIterations(500)
 
     refined_mask = img_filter.Execute(itk_mask, gradient_magnitude)
 
     if args.visualize:
         visualize_3d_slice(
             image,
-            sitk.GetArrayFromImage(gradient_magnitude),
             binary_mask,
+            sitk.GetArrayFromImage(gradient_magnitude),
             sitk.GetArrayFromImage(refined_mask).astype(np.float16)
         )
 
@@ -193,13 +175,11 @@ def main():
 
     image: np.ndarray = imread(image_path)
     mask: np.ndarray = imread(mask_path)
+    mask[mask == 1] = 0
+
     labels, pixel_count = np.unique(mask, return_counts=True)
 
-    # Set background to 0 if labeled
-    if labels[0] == 1 and pixel_count[0] >= 50000:
-        mask[mask == 1] = 0
-        print(f"Removed label {labels[0]} of size {pixel_count[0]}")
-
+    print(labels)
     # Refine masks using active contour
     refined_mask = np.zeros_like(mask)
     with Pool(processes=args.processes) as pool:
@@ -208,9 +188,13 @@ def main():
             [(image, mask, label) for label in labels[1:]]
         )
 
-    for refined_label, label in results:
-        refined_mask[np.where(refined_label == 1)] = label
+    next_label = 1
+    for refined_label, _ in results:
+        if refined_label.max() > 0:
+            refined_mask[np.where(refined_label == 1)] = next_label
+            next_label += 1
 
+    print(np.unique(refined_mask))
     # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
     imwrite(save_path, refined_mask)
