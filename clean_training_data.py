@@ -33,19 +33,19 @@ def get_label_slice(mask: np.ndarray) -> ndarray[int]:
 
 def visualize_3d_slice(
         image: np.ndarray,
+        gradient_magnitude: np.ndarray,
         mask: np.ndarray,
         refined_mask: np.ndarray,
-        gradient_magnitude: np.ndarray
 ):
     """
     Visualize slices of input image, mask, gradient magnitude, and refined mask.
 
-    :param mask: The initial mask.
-    :param gradient_magnitude: The gradient magnitude.
+    :param gradient_magnitude: The initial mask.
+    :param refined_mask: The gradient magnitude.
     :param image: The input image.
-    :param refined_mask: The refined mask.
+    :param mask: The refined mask.
     """
-    slice_index = get_label_slice(mask)
+    slice_index = get_label_slice(gradient_magnitude)
 
     fig, axes = plt.subplots(1, 4, figsize=(20, 5))
 
@@ -55,18 +55,18 @@ def visualize_3d_slice(
     axes[0].axis('off')
 
     # Display the initial mask slice
-    axes[1].imshow(mask[slice_index], cmap='gray')
-    axes[1].set_title('Initial Mask Slice')
+    axes[1].imshow(gradient_magnitude[slice_index], cmap='jet')
+    axes[1].set_title('Gradient Magnitude Slice')
     axes[1].axis('off')
 
     # Display the gradient magnitude slice
-    axes[2].imshow(gradient_magnitude[slice_index], cmap='jet')
-    axes[2].set_title('Gradient Magnitude Slice')
+    axes[2].imshow(refined_mask[slice_index], cmap='jet')
+    axes[2].set_title('Refined Mask Slice')
     axes[2].axis('off')
 
     # Display the refined mask slice
-    axes[3].imshow(refined_mask[slice_index], cmap='gray')
-    axes[3].set_title('Refined Mask Slice')
+    axes[3].imshow(mask[slice_index], cmap='gray')
+    axes[3].set_title('Initial Mask Slice')
     axes[3].axis('off')
 
     plt.tight_layout()
@@ -113,7 +113,7 @@ def process_label(
     cropped_image = image[x_min:x_max, y_min:y_max, z_min:z_max]
     cropped_mask = label_mask[x_min:x_max, y_min:y_max, z_min:z_max]
 
-    refined_cropped_mask = active_countour(cropped_image, cropped_mask)
+    refined_cropped_mask = active_contour(cropped_image, cropped_mask)
 
     label_mask[
         x_min: x_max, y_min: y_max, z_min: z_max
@@ -137,10 +137,10 @@ def process_labels(
     image, mask, label = data
     print(f"Processing mask {label}")
     label_mask = (mask == label).astype(np.uint8)
-    return active_countour(image, label_mask), label
+    return active_contour(image, label_mask), label
 
 
-def active_countour(
+def active_contour(
         image: np.ndarray,
         binary_mask: np.ndarray
 ) -> np.ndarray[np.uint8]:
@@ -162,29 +162,29 @@ def active_countour(
     )
 
     gradient_magnitude = sitk.GradientMagnitudeRecursiveGaussian(
-        itk_image, sigma=1
+        itk_image, sigma=2
     )
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-0.5)
-    img_filter.SetCurvatureScaling(9.0)
-    img_filter.SetAdvectionScaling(6.0)
-    img_filter.SetMaximumRMSError(0.01)
+    img_filter.SetPropagationScaling(-1.0)
+    img_filter.SetCurvatureScaling(10.0)
+    img_filter.SetAdvectionScaling(10.0)
+    img_filter.SetMaximumRMSError(0.005)
     img_filter.SetNumberOfIterations(250)
 
     refined_mask = img_filter.Execute(itk_mask, gradient_magnitude)
 
     if args.visualize:
         visualize_3d_slice(
-            sitk.GetArrayFromImage(itk_mask),
+            image,
             sitk.GetArrayFromImage(gradient_magnitude),
             binary_mask,
             sitk.GetArrayFromImage(refined_mask).astype(np.float16)
         )
 
     # Convert the refined mask into binary
-    return (sitk.GetArrayFromImage(refined_mask) > -2.0).astype(np.uint8)
+    return (sitk.GetArrayFromImage(refined_mask) > -1.0).astype(np.uint8)
 
 
 def main():
@@ -209,7 +209,7 @@ def main():
         )
 
     for refined_label, label in results:
-        refined_mask[refined_label == 1] = label
+        refined_mask[np.where(refined_label == 1)] = label
 
     # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
