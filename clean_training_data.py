@@ -167,10 +167,10 @@ def active_contour(
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-1.0)
+    img_filter.SetPropagationScaling(-4.0)
     img_filter.SetCurvatureScaling(10.0)
     img_filter.SetAdvectionScaling(10.0)
-    img_filter.SetMaximumRMSError(0.005)
+    img_filter.SetMaximumRMSError(0.01)
     img_filter.SetNumberOfIterations(250)
 
     refined_mask = img_filter.Execute(itk_mask, gradient_magnitude)
