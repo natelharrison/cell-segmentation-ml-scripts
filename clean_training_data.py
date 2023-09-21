@@ -193,7 +193,7 @@ def main():
     refined_mask = np.zeros_like(mask)
     with Pool(processes=args.processes) as pool:
         label_counter = 1
-        for refined_label in pool.map(
+        for refined_label in pool.imap(
                 process_label, [(image, mask, label) for label in labels[1:]]
         ):
             if refined_label is None:
