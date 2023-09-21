@@ -43,7 +43,7 @@ def visualize_3d_slice(
     :param image: The input image.
     :param mask: The refined mask.
     """
-    slice_index = get_label_slice(gradient_magnitude)
+    slice_index = get_label_slice(mask)
 
     fig, axes = plt.subplots(1, 4, figsize=(20, 5))
 
