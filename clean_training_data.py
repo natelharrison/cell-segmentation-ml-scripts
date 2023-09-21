@@ -1,11 +1,10 @@
 import argparse
 from multiprocessing import Pool
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
-import skimage.measure
 
 from numpy import ndarray
 from pathlib import Path
@@ -14,7 +13,7 @@ from tifffile import imread, imwrite
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
 parser.add_argument('--mask_path', type=str, help='Path to the input mask')
-parser.add_argument('--remove_label', type=int, help='Label to be removed from the mask')
+parser.add_argument('--background', type=int, help='Remove background if labeled')
 parser.add_argument('--processes', type=int, help='Number of processes for parallel processing')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
@@ -23,7 +22,6 @@ args = parser.parse_args()
 def get_label_slice(mask: np.ndarray) -> ndarray[int]:
     """
     Get the index of the slice with the most prominent label in a 3D binary mask.
-
     :param mask: np.ndarray: The 3D binary mask.
     :return ndarray[int]: The index of the prominent slice.
     """
@@ -74,32 +72,35 @@ def visualize_3d_slice(
 
 
 def get_bounding_box(
-        mask: np.ndarray, label: int, buffer: int = 16
+        binary_mask: np.ndarray, buffer: int = 16
 ) -> Tuple[int, int, int, int, int, int]:
     """
     Returns the bounding box for a given label
-    :param mask:
-    :param label:
+    :param binary_mask:
     :param buffer:
     :return bounding_coords:
     """
-    props = skimage.measure.regionprops((mask == label).astype(int))
+    x, y, z = np.where(binary_mask)
 
-    min_x, min_y, min_z, max_x, max_y, max_z = props[0].bbox
+    x_min, x_max = np.min(x) - buffer, np.max(x) + buffer + 1
+    y_min, y_max = np.min(y) - buffer, np.max(y) + buffer + 1
+    z_min, z_max = np.min(z) - buffer, np.max(z) + buffer + 1
 
-    return (
-        max(0, min_x - buffer),
-        min(mask.shape[0], max_x + buffer),
-        max(0, min_y - buffer),
-        min(mask.shape[1], max_y + buffer),
-        max(0, min_z - buffer),
-        min(mask.shape[2], max_z + buffer)
-    )
+    # Make sure coordinated within image dimensions
+    x_min = max(0, x_min)
+    y_min = max(0, y_min)
+    z_min = max(0, z_min)
+
+    x_max = min(binary_mask.shape[0], x_max)
+    y_max = min(binary_mask.shape[1], y_max)
+    z_max = min(binary_mask.shape[2], z_max)
+
+    return x_min, x_max, y_min, y_max, z_min, z_max
 
 
 def process_label(
         data: Tuple[np.ndarray, np.ndarray, int]
-) -> Tuple[np.ndarray, int]:
+) -> Optional[np.ndarray[np.bool_]]:
     """
     Process a label within a Pool of processes.
     :param data:
@@ -107,25 +108,31 @@ def process_label(
     """
     image, mask, label = data
     print(f"Processing mask {label}")
-    label_mask = (mask == label).astype(np.uint8)
+    uncropped_label = (mask == label).astype(np.bool_)
 
-    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(mask, label)
+    if np.sum(uncropped_label) <= 512:
+        print(
+            f"Label {label} contains fewer than 100 labeled pixels - skipping"
+        )
+        return None
+
+    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(uncropped_label)
     cropped_image = image[x_min:x_max, y_min:y_max, z_min:z_max]
-    cropped_mask = label_mask[x_min:x_max, y_min:y_max, z_min:z_max]
+    cropped_mask = uncropped_label[x_min:x_max, y_min:y_max, z_min:z_max]
 
-    refined_cropped_mask = active_contour(cropped_image, cropped_mask)
+    refined_cropped_label = active_contour(cropped_image, cropped_mask)
 
-    label_mask[
+    uncropped_label[
         x_min: x_max, y_min: y_max, z_min: z_max
-    ] = refined_cropped_mask
+    ] = refined_cropped_label
 
-    return label_mask, label
+    return uncropped_label.astype(np.bool_)
 
 
 def active_contour(
         image: np.ndarray,
         binary_mask: np.ndarray
-) -> np.ndarray[np.uint8]:
+) -> np.ndarray[np.bool_]:
     """
     Perform active contour segmentation on an input image.
     :param image:
@@ -166,7 +173,7 @@ def active_contour(
         )
 
     # Convert the refined mask into binary
-    return (sitk.GetArrayFromImage(refined_mask) > -1.0).astype(np.uint8)
+    return (sitk.GetArrayFromImage(refined_mask) > -1.0).astype(np.bool_)
 
 
 def main():
@@ -175,26 +182,26 @@ def main():
 
     image: np.ndarray = imread(image_path)
     mask: np.ndarray = imread(mask_path)
-    mask[mask == 1] = 0
+
+    # Remove background with label value 1 from mask
+    if args.background:
+        mask[mask == args.background] = 0
 
     labels, pixel_count = np.unique(mask, return_counts=True)
 
-    print(labels)
     # Refine masks using active contour
     refined_mask = np.zeros_like(mask)
     with Pool(processes=args.processes) as pool:
-        results = pool.map(
-            process_label,
-            [(image, mask, label) for label in labels[1:]]
-        )
+        label_counter = 1
+        for refined_label in pool.imap(
+                process_label, [(image, mask, label) for label in labels[1:]]
+        ):
+            if refined_label is None:
+                continue
 
-    next_label = 1
-    for refined_label, _ in results:
-        if refined_label.max() > 0:
-            refined_mask[np.where(refined_label == 1)] = next_label
-            next_label += 1
+            refined_mask[refined_label] = label_counter
+            label_counter += 1
 
-    print(np.unique(refined_mask))
     # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
     imwrite(save_path, refined_mask)
