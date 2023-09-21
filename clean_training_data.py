@@ -1,4 +1,5 @@
 import argparse
+import cProfile
 from multiprocessing import Pool
 from typing import Tuple, Union, Optional
 
@@ -208,4 +209,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if __name__ == '__main__':
+        cProfile.run('main()', 'profile_output.pstat')
