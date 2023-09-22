@@ -27,7 +27,7 @@ if args.object_store_memory is None:
     ray.init()
 else:
     object_store_memory = args.object_store_memory * 10 ** 9
-    ray.init(object_store_memory=object_store_memory)
+    ray.init(object_store_memory=object_store_memory, num_cpus=args.num_chunks)
 
 
 def get_label_slice(mask: np.ndarray) -> ndarray[int]:
