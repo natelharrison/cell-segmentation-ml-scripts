@@ -36,6 +36,14 @@ def get_label_slice(mask: np.ndarray) -> ndarray[int]:
     return np.argmax(slice_sums)
 
 
+def mask_to_dask(mask: np.ndarray[np.uint8]) -> da.Array:
+    labels = np.unique(mask)
+    binary_mask = [
+        (mask == label).astype(np.bool_) for label in labels
+    ]
+    return da.stack(binary_mask)
+
+
 def visualize_3d_slice(
         image: np.ndarray,
         mask: np.ndarray,
@@ -106,34 +114,34 @@ def get_bounding_box(
 
 
 def process_label(
-        data: Tuple[np.ndarray, np.ndarray, int]
+        binary_mask: np.ndarray,
+        image: np.ndarray
 ) -> Optional[np.ndarray[np.bool_]]:
     """
     Process a label within a Pool of processes.
-    :param data:
-    :return active_contour(), label:
+    :param binary_mask:
+    :param image:
+    :return active_contour():
     """
-    image, mask, label = data
-    uncropped_label = (mask == label).astype(np.bool_)
 
-    if np.sum(uncropped_label) <= 512:
+    if np.sum(binary_mask) <= 512:
         print(
-            f"Label {label} contains fewer than 100 labeled pixels - skipping"
+            f"Label contains fewer than 100 labeled pixels - skipping"
         )
         sys.stdout.flush()
         return None
 
-    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(uncropped_label)
+    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(binary_mask)
     cropped_image = image[x_min:x_max, y_min:y_max, z_min:z_max]
-    cropped_mask = uncropped_label[x_min:x_max, y_min:y_max, z_min:z_max]
+    cropped_mask = binary_mask[x_min:x_max, y_min:y_max, z_min:z_max]
 
     refined_cropped_label = active_contour(cropped_image, cropped_mask)
 
-    uncropped_label[
+    binary_mask[
         x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_label
 
-    return uncropped_label.astype(np.bool_)
+    return binary_mask.astype(np.bool_)
 
 
 def active_contour(
@@ -183,25 +191,6 @@ def active_contour(
     return (sitk.GetArrayFromImage(refined_mask) > -1.0).astype(np.bool_)
 
 
-def process_chunk(image_chunk, mask_chunk):
-    """
-    Yet another wrapper function...
-    :param image_chunk:
-    :param mask_chunk:
-    :return refined_mask_chunk:
-    """
-    labels, pixel_count = np.unique(mask_chunk, return_counts=True)
-    refined_mask_chunk = np.zeros_like(mask_chunk)
-    for label in labels[1:]:
-        result = process_label((image_chunk, mask_chunk, label))
-        if result is not None:
-            refined_mask_chunk[result] = label
-        print(f"Processed label {label}")
-        sys.stdout.flush()
-
-    return refined_mask_chunk
-
-
 def main():
     image_path: Union[str, Path] = Path(args.image_path)
     mask_path: Union[str, Path] = Path(args.mask_path)
@@ -223,33 +212,26 @@ def main():
     #     return
 
     total_cpu_cores = os.cpu_count()
-    cluster = LocalCluster(threads_per_worker=total_cpu_cores-2)
+    cluster = LocalCluster(threads_per_worker=total_cpu_cores // 2)
     with Client(cluster) as client:
-        chunk_size = (
-            image.shape[0] // args.num_chunks,
-            image.shape[1],
-            image.shape[2]
-        )
-        overlap_size = (chunk_size[0] * .30, chunk_size[2] * .30)
 
-        # Initialize dask chunks
-        image_da = da.from_array(image, chunks=chunk_size)
-        mask_da = da.from_array(mask, chunks=chunk_size)
-
-        # Process each chunk with overlap
-        refined_mask_da = da.map_overlap(
-            process_chunk, image_da, mask_da, dtype=mask.dtype,
-            depth={0: overlap_size[0], 1: 0, 2: 0}, boundary='reflect'
-        )
+        mask_da = mask_to_dask(mask)
+        refined_mask = np.zeros_like(mask)
+        del mask
 
         with ProgressBar():
-            refined_mask = refined_mask_da.compute()
+            results_da = mask_da.map_blocks(process_label, image)
+        results = results_da.compute()
+
+        label_counter = 1
+        for binary_mask in results:
+            refined_mask[binary_mask] = label_counter
+            label_counter += 1
 
         # Save refined masks
         save_path = mask_path.parent / "refined_mask.tif"
         imwrite(save_path, refined_mask)
 
-    client.close()
 
 
 if __name__ == '__main__':
