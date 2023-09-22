@@ -228,7 +228,7 @@ def main():
         chunk_size = (
             image.shape[0] // args.num_chunks,
             image.shape[1],
-            image.shape[2] // (args.num_chunks // 2)
+            image.shape[2]
         )
         overlap_size = (chunk_size[0] * .30, chunk_size[2] * .30)
 
@@ -239,7 +239,7 @@ def main():
         # Process each chunk with overlap
         refined_mask_da = da.map_overlap(
             process_chunk, image_da, mask_da, dtype=mask.dtype,
-            depth={0: overlap_size[0], 1: 0, 2: overlap_size[1]}, boundary='reflect'
+            depth={0: overlap_size[0], 1: 0, 2: 0}, boundary='reflect'
         )
 
         with ProgressBar():
