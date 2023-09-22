@@ -2,12 +2,15 @@ import argparse
 from multiprocessing import Pool
 from typing import Tuple, Union, Optional
 
+import dask.array as da
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 
 from dask import delayed, compute
-from dask.distributed import Client, as_completed
+from dask.array.overlap import overlap
+from dask.distributed import Client
+
 from numpy import ndarray
 from pathlib import Path
 from tifffile import imread, imwrite
@@ -15,6 +18,8 @@ from tifffile import imread, imwrite
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
 parser.add_argument('--mask_path', type=str, help='Path to the input mask')
+parser.add_argument('--num_chunks', type=int, default=2,
+                    help='Number of chunks to split image into along z-axis')
 parser.add_argument('--background', type=int, help='Remove background if labeled')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
@@ -177,6 +182,22 @@ def active_contour(
     return (sitk.GetArrayFromImage(refined_mask) > -1.0).astype(np.bool_)
 
 
+def process_chunk(image_chunk, mask_chunk):
+    """
+    Yet another wrapper function...
+    :param image_chunk:
+    :param mask_chunk:
+    :return refined_mask_chunk:
+    """
+    labels, pixel_count = np.unique(mask_chunk, return_counts=True)
+    refined_mask_chunk = np.zeros_like(mask_chunk)
+    for label in labels[1:]:
+        result = process_label((image_chunk, mask_chunk, label))
+        if result is not None:
+            refined_mask_chunk[result] = label
+    return refined_mask_chunk
+
+
 def main():
     image_path: Union[str, Path] = Path(args.image_path)
     mask_path: Union[str, Path] = Path(args.mask_path)
@@ -188,32 +209,40 @@ def main():
     if args.background:
         mask[mask == args.background] = 0
 
-    labels, pixel_count = np.unique(mask, return_counts=True)
-
     # Visualize each label as they are computed. Does not save outputs.
-    if args.visualize:
-        valid_labels = labels[np.where(pixel_count >= 1000)[0]]
-        for label in valid_labels[1:]:
-            _ = process_label((image, mask, label))
-        return
+    # NOT WORKING WITH DASK, NEED TO FIX
+    # if args.visualize:
+    #     labels, pixel_count = np.unique(mask, return_counts=True)
+    #     valid_labels = labels[np.where(pixel_count >= 1000)[0]]
+    #     for label in valid_labels[1:]:
+    #         _ = process_label((image, mask, label))
+    #     return
 
-    # Refine masks using active contour
-    refined_mask = np.zeros_like(mask)
-    tasks = [delayed(process_label)((image, mask, label)) for label in labels[1:]]
-    results = compute(*tasks)
+    with Client() as client:
+        chunk_size = (
+            image.shape[0] // args.num_chunks, image.shape[1], image.shape[2]
+        )
+        overlap_size = (chunk_size[0] // 3)
 
-    label_counter = 1
-    for result in results:
-        if result is None:
-            continue
-        refined_mask[result] = label_counter
-        label_counter += 1
+        # Initialize dask chunks
+        image_da = da.from_array(image, chunks=chunk_size)
+        mask_da = da.from_array(mask, chunks=chunk_size)
 
-    # Save refined masks
-    save_path = mask_path.parent / "refined_mask.tif"
-    imwrite(save_path, refined_mask)
+        # Process each chunk with overlap
+        refined_mask_da = da.map_overlap(
+            process_chunk, image_da, mask_da, dtype=mask.dtype,
+            depth={0: overlap_size, 1: 0, 2: 0}, boundary='trim'
+        )
+
+        refined_mask = refined_mask_da.compute()
+
+        # Save refined masks
+        save_path = mask_path.parent / "refined_mask.tif"
+        imwrite(save_path, refined_mask)
+
+    client.close()
 
 
 if __name__ == '__main__':
-    client = Client()
+
     main()
