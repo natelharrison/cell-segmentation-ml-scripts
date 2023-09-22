@@ -119,6 +119,7 @@ def process_label(
         print(
             f"Label {label} contains fewer than 100 labeled pixels - skipping"
         )
+        sys.stdout.flush()
         return None
 
     x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(uncropped_label)
