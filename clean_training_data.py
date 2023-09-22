@@ -231,7 +231,7 @@ def main():
         # Process each chunk with overlap
         refined_mask_da = da.map_overlap(
             process_chunk, image_da, mask_da, dtype=mask.dtype,
-            depth={0: overlap_size, 1: 0, 2: 0}, boundary='trim'
+            depth={0: overlap_size, 1: 0, 2: 0}, boundary='reflect'
         )
 
         refined_mask = refined_mask_da.compute()
@@ -244,5 +244,4 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()
