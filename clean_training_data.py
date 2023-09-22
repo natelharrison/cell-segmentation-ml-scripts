@@ -18,11 +18,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
 parser.add_argument('--mask_path', type=str, help='Path to the input mask')
 parser.add_argument('--num_chunks', type=int, default=os.cpu_count())
+parser.add_argument('--object_store_memory', type=int, default=None)
 parser.add_argument('--background', type=int, help='Remove background if labeled')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
 
-ray.init()
+if args.object_store_memory is None:
+    ray.init()
+else:
+    object_store_memory = args.object_store_memory * 10 ** 9
+    ray.init(object_store_memory=object_store_memory)
 
 
 def get_label_slice(mask: np.ndarray) -> ndarray[int]:
