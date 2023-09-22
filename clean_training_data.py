@@ -1,5 +1,6 @@
-import argparse
 import gc
+import os
+import argparse
 import sys
 
 from typing import Tuple, Union, Optional
@@ -141,7 +142,7 @@ def process_label(
     refined_cropped_label = active_contour(cropped_image, cropped_mask)
 
     binary_mask[
-    x_min: x_max, y_min: y_max, z_min: z_max
+        x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_label
 
     del refined_cropped_label, cropped_mask, cropped_image
@@ -196,9 +197,6 @@ def active_contour(
             sitk.GetArrayFromImage(refined_mask).astype(np.float16)
         )
 
-    del itk_image, itk_binary_mask, itk_mask, gradient_magnitude
-    gc.collect()
-
     # Convert the refined mask into binary
     return (sitk.GetArrayFromImage(refined_mask) > -1).astype(np.bool_)
 
@@ -227,8 +225,8 @@ def main():
     #     return
 
     labels = np.unique(mask)[1:]
-    chunk_size = 10
     n_labels = len(labels)
+    chunk_size = round(os.cpu_count() * 0.75)
 
     pending_futures = []
     refined_mask = np.zeros_like(mask)
