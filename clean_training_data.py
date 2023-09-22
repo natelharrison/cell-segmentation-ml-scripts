@@ -15,13 +15,12 @@ from dask.distributed import Client, LocalCluster
 
 from numpy import ndarray
 from pathlib import Path
+from scipy import ndimage
 from tifffile import imread, imwrite
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
 parser.add_argument('--mask_path', type=str, help='Path to the input mask')
-parser.add_argument('--num_chunks', type=int, default=2,
-                    help='Number of chunks to split image into along z-axis')
 parser.add_argument('--background', type=int, help='Remove background if labeled')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
@@ -80,15 +79,20 @@ def visualize_3d_slice(
 
 
 def get_bounding_box(
-        binary_mask: np.ndarray, buffer: int = 16
-) -> Tuple[int, int, int, int, int, int]:
+        binary_mask: np.ndarray, label: int, buffer: int = 16
+) -> Optional[Tuple[int, int, int, int, int, int]]:
     """
     Returns the bounding box for a given label
+    :param label:
     :param binary_mask:
     :param buffer:
     :return bounding_coords:
     """
     x, y, z = np.where(binary_mask)
+
+    if x.size == 0 or y.size == 0 or z.size == 0:
+        print(f"Label {label} has no positive pixels in the binary mask.")
+        return None
 
     x_min, x_max = np.min(x) - buffer, np.max(x) + buffer + 1
     y_min, y_max = np.min(y) - buffer, np.max(y) + buffer + 1
@@ -107,34 +111,38 @@ def get_bounding_box(
 
 
 def process_label(
-        binary_mask: np.ndarray,
-        image: np.ndarray
-) -> Optional[np.ndarray[np.bool_]]:
+        mask: np.ndarray,
+        image: np.ndarray,
+        label: int
+) -> Tuple[Optional[np.ndarray[np.bool_]], int]:
     """
     Process a label within a Pool of processes.
-    :param binary_mask:
+    :param mask:
     :param image:
+    :param label:
     :return active_contour():
     """
+    binary_mask = (mask == label).astype(np.bool_)
 
-    if np.sum(binary_mask) <= 512:
-        print(
-            f"Label contains fewer than 100 labeled pixels - skipping"
-        )
-        sys.stdout.flush()
-        return None
-
-    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(binary_mask)
+    x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(binary_mask, label)
     cropped_image = image[x_min:x_max, y_min:y_max, z_min:z_max]
     cropped_mask = binary_mask[x_min:x_max, y_min:y_max, z_min:z_max]
+
+    if np.sum(binary_mask) <= 512 or cropped_mask is None:
+        print("Label contains fewer than 512 labeled pixels - skipping")
+        sys.stdout.flush()
+        return None, label
 
     refined_cropped_label = active_contour(cropped_image, cropped_mask)
 
     binary_mask[
-        x_min: x_max, y_min: y_max, z_min: z_max
+    x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_label
 
-    return binary_mask.astype(np.bool_)
+    print(f"Processed label {label}")
+    sys.stdout.flush()
+
+    return binary_mask.astype(np.bool_), label
 
 
 def active_contour(
@@ -159,13 +167,13 @@ def active_contour(
     )
 
     gradient_magnitude = sitk.GradientMagnitudeRecursiveGaussian(
-        itk_image, sigma=2
+        itk_image, sigma=2.5
     )
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-2.0)
-    img_filter.SetCurvatureScaling(10.0)
+    img_filter.SetPropagationScaling(-2)
+    img_filter.SetCurvatureScaling(5.0)
     img_filter.SetAdvectionScaling(10.0)
     img_filter.SetMaximumRMSError(0.005)
     img_filter.SetNumberOfIterations(500)
@@ -181,7 +189,7 @@ def active_contour(
         )
 
     # Convert the refined mask into binary
-    return (sitk.GetArrayFromImage(refined_mask) > -1.0).astype(np.bool_)
+    return (sitk.GetArrayFromImage(refined_mask) > -1).astype(np.bool_)
 
 
 def main():
@@ -196,35 +204,34 @@ def main():
         mask[mask == args.background] = 0
 
     # Visualize each label as they are computed. Does not save outputs.
-    # NOT WORKING WITH DASK, NEED TO FIX
-    # if args.visualize:
-    #     labels, pixel_count = np.unique(mask, return_counts=True)
-    #     valid_labels = labels[np.where(pixel_count >= 1000)[0]]
-    #     for label in valid_labels[1:]:
-    #         _ = process_label((image, mask, label))
-    #     return
+    target_label = None
+    if args.visualize:
+        labels, pixel_count = np.unique(mask, return_counts=True)
+        valid_labels = labels[np.where(pixel_count >= 1000)[0]]
+        if target_label is not None:
+            valid_labels = [0, target_label]
+        for label in valid_labels[1:]:
+            _ = process_label((image, mask, label))
+        return
 
     total_cpu_cores = os.cpu_count()
-    cluster = LocalCluster(threads_per_worker=total_cpu_cores // 2)
+    cluster = LocalCluster(n_workers=total_cpu_cores, threads_per_worker=1)
     with Client(cluster) as client:
-        labels = np.unique(mask)
+        labels = np.unique(mask)[1:]
 
-        delayed_masks = [
-            delayed(
-                lambda x, lbl=label: (x == lbl).astype(np.bool_)
-            )(mask) for label in labels if label != 0
-        ]
         delayed_tasks = [
             delayed(process_label)
-            (binary_mask, image) for binary_mask in delayed_masks
+            (mask, image, label) for label in labels if label != 0
         ]
 
         results, = compute(delayed_tasks)
-
         refined_mask = np.zeros_like(mask)
+
         label_counter = 1
-        for binary_mask in results:
-            refined_mask[binary_mask] = label_counter
+        for binary_mask, label in results:
+            if binary_mask is None:
+                continue
+            refined_mask[binary_mask] = label
             label_counter += 1
 
         # Save refined masks
