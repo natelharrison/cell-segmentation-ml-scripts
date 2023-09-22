@@ -215,7 +215,7 @@ def main():
         return
 
     total_cpu_cores = os.cpu_count()
-    cluster = LocalCluster(n_workers=total_cpu_cores, threads_per_worker=1)
+    cluster = LocalCluster(n_workers=total_cpu_cores // 2, threads_per_worker=1)
     with Client(cluster) as client:
         labels = np.unique(mask)[1:]
 
