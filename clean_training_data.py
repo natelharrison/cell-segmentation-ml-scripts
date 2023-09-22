@@ -8,6 +8,7 @@ import dask.array as da
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
+from dask import delayed, compute
 
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster
@@ -34,14 +35,6 @@ def get_label_slice(mask: np.ndarray) -> ndarray[int]:
     """
     slice_sums = mask.sum(axis=(1, 2))
     return np.argmax(slice_sums)
-
-
-def mask_to_dask(mask: np.ndarray[np.uint8]) -> da.Array:
-    labels = np.unique(mask)
-    binary_mask = [
-        (mask == label).astype(np.bool_) for label in labels
-    ]
-    return da.stack(binary_mask)
 
 
 def visualize_3d_slice(
@@ -214,15 +207,21 @@ def main():
     total_cpu_cores = os.cpu_count()
     cluster = LocalCluster(threads_per_worker=total_cpu_cores // 2)
     with Client(cluster) as client:
+        labels = np.unique(mask)
 
-        mask_da = mask_to_dask(mask)
+        delayed_masks = [
+            delayed(
+                lambda x, lbl=label: (x == lbl).astype(np.bool_)
+            )(mask) for label in labels if label != 0
+        ]
+        delayed_tasks = [
+            delayed(process_label)
+            (binary_mask, image) for binary_mask in delayed_masks
+        ]
+
+        results, = compute(delayed_tasks)
+
         refined_mask = np.zeros_like(mask)
-        del mask
-
-        with ProgressBar():
-            results_da = mask_da.map_blocks(process_label, image)
-        results = results_da.compute()
-
         label_counter = 1
         for binary_mask in results:
             refined_mask[binary_mask] = label_counter
@@ -231,7 +230,6 @@ def main():
         # Save refined masks
         save_path = mask_path.parent / "refined_mask.tif"
         imwrite(save_path, refined_mask)
-
 
 
 if __name__ == '__main__':
