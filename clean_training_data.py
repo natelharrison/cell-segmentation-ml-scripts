@@ -134,6 +134,9 @@ def process_label(
         x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_label
 
+    print(f"Processed label {label}")
+    sys.stdout.flush()
+
     return uncropped_label.astype(np.bool_)
 
 
