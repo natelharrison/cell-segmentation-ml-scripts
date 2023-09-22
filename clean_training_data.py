@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 
 from typing import Tuple, Union, Optional
@@ -227,7 +228,8 @@ def main():
     #         _ = process_label((image, mask, label))
     #     return
 
-    cluster = LocalCluster(threads_per_worker="auto")
+    total_cpu_cores = os.cpu_count()
+    cluster = LocalCluster(threads_per_worker=total_cpu_cores-2)
     with Client(cluster) as client:
         chunk_size = (
             image.shape[0] // args.num_chunks, image.shape[1], image.shape[2]
