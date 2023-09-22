@@ -13,6 +13,7 @@ from dask import delayed, compute
 
 from dask.diagnostics import ProgressBar
 from dask.distributed import Client, LocalCluster
+from memory_profiler import profile
 
 from numpy import ndarray
 from pathlib import Path
@@ -199,6 +200,7 @@ def active_contour(
     return (sitk.GetArrayFromImage(refined_mask) > -1).astype(np.bool_)
 
 
+@profile
 def main():
     image_path: Union[str, Path] = Path(args.image_path)
     mask_path: Union[str, Path] = Path(args.mask_path)
