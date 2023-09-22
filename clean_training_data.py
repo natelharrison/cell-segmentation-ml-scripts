@@ -10,7 +10,8 @@ import numpy as np
 import SimpleITK as sitk
 
 from dask.diagnostics import ProgressBar
-from dask.distributed import Client
+from dask.distributed import Client, LocalCluster
+
 
 from numpy import ndarray
 from pathlib import Path
@@ -223,7 +224,8 @@ def main():
     #         _ = process_label((image, mask, label))
     #     return
 
-    with Client() as client:
+    cluster = LocalCluster(threads_per_worker="auto")
+    with Client(cluster) as client:
         chunk_size = (
             image.shape[0] // args.num_chunks, image.shape[1], image.shape[2]
         )
