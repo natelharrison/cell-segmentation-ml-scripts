@@ -226,9 +226,11 @@ def main():
     cluster = LocalCluster(threads_per_worker=total_cpu_cores-2)
     with Client(cluster) as client:
         chunk_size = (
-            image.shape[0] // args.num_chunks, image.shape[1], image.shape[2]
+            image.shape[0] // args.num_chunks,
+            image.shape[1],
+            image.shape[2] // (args.num_chunks // 2)
         )
-        overlap_size = (chunk_size[0] // 3)
+        overlap_size = (chunk_size[0] * 50, chunk_size[2] * 50)
 
         # Initialize dask chunks
         image_da = da.from_array(image, chunks=chunk_size)
@@ -237,7 +239,7 @@ def main():
         # Process each chunk with overlap
         refined_mask_da = da.map_overlap(
             process_chunk, image_da, mask_da, dtype=mask.dtype,
-            depth={0: overlap_size, 1: 0, 2: 0}, boundary='reflect'
+            depth={0: overlap_size[0], 1: 0, 2: overlap_size[1]}, boundary='reflect'
         )
 
         with ProgressBar():
