@@ -3,7 +3,6 @@ import sys
 
 from typing import Tuple, Union, Optional
 
-import dask
 import dask.array as da
 import matplotlib.pyplot as plt
 import numpy as np
@@ -192,14 +191,13 @@ def process_chunk(image_chunk, mask_chunk):
     """
     labels, pixel_count = np.unique(mask_chunk, return_counts=True)
     refined_mask_chunk = np.zeros_like(mask_chunk)
-    processed_labels = [
-        process_label((image_chunk, mask_chunk, label)) for label in labels[1:]
-    ]
-    results = dask.compute(*processed_labels)  # Use Dask to parallelize processing
-
-    for label, result in zip(labels[1:], results):
+    for label in labels[1:]:
+        result = process_label((image_chunk, mask_chunk, label))
         if result is not None:
             refined_mask_chunk[result] = label
+        print(f"Processed label {label}")
+        sys.stdout.flush()
+
     return refined_mask_chunk
 
 
