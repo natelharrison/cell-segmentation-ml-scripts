@@ -230,7 +230,7 @@ def main():
             image.shape[1],
             image.shape[2] // (args.num_chunks // 2)
         )
-        overlap_size = (chunk_size[0] * 50, chunk_size[2] * 50)
+        overlap_size = (chunk_size[0] * .50, chunk_size[2] * .50)
 
         # Initialize dask chunks
         image_da = da.from_array(image, chunks=chunk_size)
