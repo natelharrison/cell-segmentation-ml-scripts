@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 
 from typing import Tuple, Union, Optional
@@ -9,7 +10,7 @@ import numpy as np
 import SimpleITK as sitk
 
 from dask.diagnostics import ProgressBar
-from dask.distributed import Client
+from dask.distributed import Client, LocalCluster
 
 from numpy import ndarray
 from pathlib import Path
@@ -221,7 +222,9 @@ def main():
     #         _ = process_label((image, mask, label))
     #     return
 
-    with Client() as client:
+    total_cpu_cores = os.cpu_count()
+    cluster = LocalCluster(threads_per_worker=total_cpu_cores-2)
+    with Client(cluster) as client:
         chunk_size = (
             image.shape[0] // args.num_chunks, image.shape[1], image.shape[2]
         )
