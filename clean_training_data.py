@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 
+from dask import delayed, compute
+from dask.distributed import Client, as_completed
 from numpy import ndarray
 from pathlib import Path
 from tifffile import imread, imwrite
@@ -14,7 +16,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
 parser.add_argument('--mask_path', type=str, help='Path to the input mask')
 parser.add_argument('--background', type=int, help='Remove background if labeled')
-parser.add_argument('--processes', type=int, help='Number of processes for parallel processing')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
 
@@ -189,18 +190,24 @@ def main():
 
     labels, pixel_count = np.unique(mask, return_counts=True)
 
+    # Visualize each label as they are computed. Does not save outputs.
+    if args.visualize:
+        valid_labels = labels[np.where(pixel_count >= 1000)[0]]
+        for label in valid_labels[1:]:
+            _ = process_label((image, mask, label))
+        return
+
     # Refine masks using active contour
     refined_mask = np.zeros_like(mask)
-    with Pool(processes=args.processes) as pool:
-        label_counter = 1
-        for refined_label in pool.imap(
-                process_label, [(image, mask, label) for label in labels[1:]]
-        ):
-            if refined_label is None:
-                continue
+    tasks = [delayed(process_label)((image, mask, label)) for label in labels[1:]]
+    results = compute(*tasks)
 
-            refined_mask[refined_label] = label_counter
-            label_counter += 1
+    label_counter = 1
+    for result in results:
+        if result is None:
+            continue
+        refined_mask[result] = label_counter
+        label_counter += 1
 
     # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
@@ -208,4 +215,5 @@ def main():
 
 
 if __name__ == '__main__':
+    client = Client()
     main()
