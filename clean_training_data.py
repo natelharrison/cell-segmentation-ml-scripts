@@ -17,6 +17,7 @@ from tifffile import imread, imwrite
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_path', type=str, help='Path to the input image')
 parser.add_argument('--mask_path', type=str, help='Path to the input mask')
+parser.add_argument('--num_chunks', type=int, default=os.cpu_count())
 parser.add_argument('--background', type=int, help='Remove background if labeled')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
@@ -226,7 +227,7 @@ def main():
 
     labels = np.unique(mask)[1:]
     n_labels = len(labels)
-    chunk_size = os.cpu_count()
+    chunk_size = args.num_chunks
 
     pending_futures = []
     refined_mask = np.zeros_like(mask)
