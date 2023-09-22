@@ -1,5 +1,6 @@
 import argparse
-from multiprocessing import Pool
+import sys
+
 from typing import Tuple, Union, Optional
 
 import dask.array as da
@@ -7,8 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 
-from dask import delayed, compute
-from dask.array.overlap import overlap
+from dask.diagnostics import ProgressBar
 from dask.distributed import Client
 
 from numpy import ndarray
@@ -113,7 +113,6 @@ def process_label(
     :return active_contour(), label:
     """
     image, mask, label = data
-    print(f"Processing mask {label}")
     uncropped_label = (mask == label).astype(np.bool_)
 
     if np.sum(uncropped_label) <= 512:
@@ -195,6 +194,9 @@ def process_chunk(image_chunk, mask_chunk):
         result = process_label((image_chunk, mask_chunk, label))
         if result is not None:
             refined_mask_chunk[result] = label
+        print(f"Processed label {label}")
+        sys.stdout.flush()
+
     return refined_mask_chunk
 
 
@@ -234,7 +236,8 @@ def main():
             depth={0: overlap_size, 1: 0, 2: 0}, boundary='reflect'
         )
 
-        refined_mask = refined_mask_da.compute()
+        with ProgressBar():
+            refined_mask = refined_mask_da.compute()
 
         # Save refined masks
         save_path = mask_path.parent / "refined_mask.tif"
