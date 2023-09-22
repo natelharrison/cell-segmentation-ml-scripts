@@ -1,4 +1,5 @@
 import argparse
+import gc
 import os
 import sys
 
@@ -139,6 +140,9 @@ def process_label(
     x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_label
 
+    del refined_cropped_label, cropped_mask, cropped_image
+    gc.collect()
+
     print(f"Processed label {label}")
     sys.stdout.flush()
 
@@ -188,6 +192,9 @@ def active_contour(
             sitk.GetArrayFromImage(refined_mask).astype(np.float16)
         )
 
+    del itk_image, itk_binary_mask, itk_mask, gradient_magnitude
+    gc.collect()
+
     # Convert the refined mask into binary
     return (sitk.GetArrayFromImage(refined_mask) > -1).astype(np.bool_)
 
@@ -215,7 +222,7 @@ def main():
         return
 
     total_cpu_cores = os.cpu_count()
-    cluster = LocalCluster(n_workers=total_cpu_cores // 2, threads_per_worker=1)
+    cluster = LocalCluster(n_workers=total_cpu_cores // 3, threads_per_worker=1)
     with Client(cluster) as client:
         labels = np.unique(mask)[1:]
 
@@ -224,8 +231,12 @@ def main():
             (mask, image, label) for label in labels if label != 0
         ]
 
-        results, = compute(delayed_tasks)
         refined_mask = np.zeros_like(mask)
+
+        del image, mask
+        gc.collect()
+
+        results, = compute(delayed_tasks)
 
         label_counter = 1
         for binary_mask, label in results:
@@ -234,7 +245,10 @@ def main():
             refined_mask[binary_mask] = label
             label_counter += 1
 
-        # Save refined masks
+            del binary_mask, label
+            gc.collect()
+
+            # Save refined masks
         save_path = mask_path.parent / "refined_mask.tif"
         imwrite(save_path, refined_mask)
 
