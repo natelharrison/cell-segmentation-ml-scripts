@@ -226,7 +226,7 @@ def main():
 
     labels = np.unique(mask)[1:]
     n_labels = len(labels)
-    chunk_size = round(os.cpu_count() * 0.75)
+    chunk_size = os.cpu_count()
 
     pending_futures = []
     refined_mask = np.zeros_like(mask)
