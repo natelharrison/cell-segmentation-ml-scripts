@@ -1,23 +1,16 @@
 import argparse
 import gc
-import os
 import sys
 
 from typing import Tuple, Union, Optional
 
-import dask.array as da
+import ray
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
-from dask import delayed, compute
-
-from dask.diagnostics import ProgressBar
-from dask.distributed import Client, LocalCluster
-from memory_profiler import profile
 
 from numpy import ndarray
 from pathlib import Path
-from scipy import ndimage
 from tifffile import imread, imwrite
 
 parser = argparse.ArgumentParser()
@@ -26,6 +19,8 @@ parser.add_argument('--mask_path', type=str, help='Path to the input mask')
 parser.add_argument('--background', type=int, help='Remove background if labeled')
 parser.add_argument('--visualize', action='store_true', help='Flag to enable visualization')
 args = parser.parse_args()
+
+ray.init()
 
 
 def get_label_slice(mask: np.ndarray) -> ndarray[int]:
@@ -80,6 +75,13 @@ def visualize_3d_slice(
     plt.show()
 
 
+def update_mask(refined_mask, results):
+    for binary_mask, label in results:
+        if binary_mask is not None:
+            refined_mask[binary_mask] = label
+    return refined_mask
+
+
 def get_bounding_box(
         binary_mask: np.ndarray, label: int, buffer: int = 16
 ) -> Optional[Tuple[int, int, int, int, int, int]]:
@@ -112,6 +114,7 @@ def get_bounding_box(
     return x_min, x_max, y_min, y_max, z_min, z_max
 
 
+@ray.remote
 def process_label(
         mask: np.ndarray,
         image: np.ndarray,
@@ -200,7 +203,6 @@ def active_contour(
     return (sitk.GetArrayFromImage(refined_mask) > -1).astype(np.bool_)
 
 
-@profile
 def main():
     image_path: Union[str, Path] = Path(args.image_path)
     mask_path: Union[str, Path] = Path(args.mask_path)
@@ -213,46 +215,43 @@ def main():
         mask[mask == args.background] = 0
 
     # Visualize each label as they are computed. Does not save outputs.
-    target_label = None
-    if args.visualize:
-        labels, pixel_count = np.unique(mask, return_counts=True)
-        valid_labels = labels[np.where(pixel_count >= 1000)[0]]
-        if target_label is not None:
-            valid_labels = [0, target_label]
-        for label in valid_labels[1:]:
-            _ = process_label((image, mask, label))
-        return
+    # Not working with ray
+    # target_label = None
+    # if args.visualize:
+    #     labels, pixel_count = np.unique(mask, return_counts=True)
+    #     valid_labels = labels[np.where(pixel_count >= 1000)[0]]
+    #     if target_label is not None:
+    #         valid_labels = [0, target_label]
+    #     for label in valid_labels[1:]:
+    #         _ = process_label((image, mask, label))
+    #     return
 
-    total_cpu_cores = os.cpu_count()
-    cluster = LocalCluster(n_workers=total_cpu_cores // 3, threads_per_worker=1)
-    with Client(cluster) as client:
-        labels = np.unique(mask)[1:]
+    labels = np.unique(mask)[1:]
+    chunk_size = 10
+    n_labels = len(labels)
 
-        delayed_tasks = [
-            delayed(process_label)
-            (mask, image, label) for label in labels if label != 0
-        ]
+    pending_futures = []
+    refined_mask = np.zeros_like(mask)
 
-        refined_mask = np.zeros_like(mask)
+    for i in range(0, n_labels, chunk_size):
+        chunk_labels = labels[i:i + chunk_size]
+        futures = [process_label.remote(mask, image, label) for label in chunk_labels if label != 0]
+        pending_futures.extend(futures)
 
-        del image, mask
-        gc.collect()
+        if len(pending_futures) >= chunk_size:
+            ready_futures, remaining_futures = ray.wait(pending_futures, num_returns=len(pending_futures))
+            results = ray.get(ready_futures)
+            refined_mask = update_mask(refined_mask, results)
+            pending_futures = remaining_futures
 
-        results, = compute(delayed_tasks)
+    if pending_futures:
+        ready_futures, _ = ray.wait(pending_futures, num_returns=len(pending_futures))
+        results = ray.get(ready_futures)
+        refined_mask = update_mask(refined_mask, results)
 
-        label_counter = 1
-        for binary_mask, label in results:
-            if binary_mask is None:
-                continue
-            refined_mask[binary_mask] = label
-            label_counter += 1
-
-            del binary_mask, label
-            gc.collect()
-
-            # Save refined masks
-        save_path = mask_path.parent / "refined_mask.tif"
-        imwrite(save_path, refined_mask)
+    # Save refined masks
+    save_path = mask_path.parent / "refined_mask.tif"
+    imwrite(save_path, refined_mask)
 
 
 if __name__ == '__main__':
