@@ -1,18 +1,13 @@
-import gc
-import os
 import argparse
+import os
 import sys
+from pathlib import Path
+from typing import Optional, Tuple, Union
 
-from typing import Tuple, Union, Optional
-
-import ray
 import matplotlib.pyplot as plt
 import numpy as np
+import ray
 import SimpleITK as sitk
-
-from numpy import ndarray
-from pathlib import Path
-
 from skimage import exposure
 from tifffile import imread, imwrite
 
@@ -33,7 +28,7 @@ else:
              num_cpus=args.num_chunks)
 
 
-def get_label_slice(mask: np.ndarray) -> ndarray[int]:
+def get_label_slice(mask: np.ndarray) -> np.ndarray[int]:
     """
     Get the index of the slice with the most prominent label
     :param mask: np.ndarray: The 3D binary mask.
@@ -41,17 +36,6 @@ def get_label_slice(mask: np.ndarray) -> ndarray[int]:
     """
     slice_sums = mask.sum(axis=(1, 2))
     return np.argmax(slice_sums)
-
-
-def pad_image(image: np.ndarray, pad_width: int = 16) -> np.ndarray:
-    """
-    Pad image along top and bottom for active contour
-    :param image:
-    :param pad_width:
-    :return:
-    """
-    padding = ((pad_width, pad_width), (0, 0), (0, 0))
-    return np.pad(image, padding, mode='reflect')
 
 
 def visualize_3d_slice(
@@ -96,6 +80,19 @@ def visualize_3d_slice(
     plt.show()
 
 
+def pad_image(image: np.ndarray, pad_width: int = 16) -> np.ndarray:
+    """
+    Pad image along edges to reduce errors in calculating active contour.
+    :param image: Image or mask to be padded
+    :param pad_width: Amount of pixels to pad image
+    :return padded_image: Imaged padded with reflected values
+    """
+    padding = (
+        (pad_width, pad_width), (pad_width, pad_width), (pad_width, pad_width)
+    )
+    return np.pad(image, padding, mode='reflect')
+
+
 def update_mask(refined_mask, results):
     for binary_mask, label in results:
         if binary_mask is not None:
@@ -136,11 +133,8 @@ def get_bounding_box(
 
 
 @ray.remote
-def process_label(
-        mask: np.ndarray,
-        image: np.ndarray,
-        label: int
-) -> Tuple[Optional[np.ndarray[np.bool_]], int]:
+def process_label(mask: np.ndarray, image: np.ndarray, label: int
+                  ) -> Tuple[np.ndarray[np.bool_], int]:
     """
     Process a label within a Pool of processes.
     :param mask:
@@ -150,23 +144,17 @@ def process_label(
     """
     binary_mask = (mask == label).astype(np.bool_)
 
+    # Crop image and mask to reduce active contour computational time
     x_min, x_max, y_min, y_max, z_min, z_max = get_bounding_box(binary_mask, label)
     cropped_image = image[x_min:x_max, y_min:y_max, z_min:z_max]
     cropped_mask = binary_mask[x_min:x_max, y_min:y_max, z_min:z_max]
 
-    if np.sum(binary_mask) <= 512 or cropped_mask is None:
-        print("Label contains fewer than 512 labeled pixels - skipping")
-        sys.stdout.flush()
-        return None, label
-
     refined_cropped_label = active_contour(cropped_image, cropped_mask)
 
+    # Reincorporate cropped mask
     binary_mask[
         x_min: x_max, y_min: y_max, z_min: z_max
     ] = refined_cropped_label
-
-    del refined_cropped_label, cropped_mask, cropped_image
-    gc.collect()
 
     print(f"Processed label {label}")
     sys.stdout.flush()
@@ -179,7 +167,7 @@ def active_contour(
         binary_mask: np.ndarray
 ) -> np.ndarray[np.bool_]:
     """
-    Perform active contour segmentation on an input image.
+    Perform active contour segmentation on an input binary mask.
     :param image:
     :param binary_mask:
     :return refined_mask as binary array:
@@ -196,14 +184,14 @@ def active_contour(
     )
 
     gradient_magnitude = sitk.GradientMagnitudeRecursiveGaussian(
-        itk_image, sigma=7
+        itk_image, sigma=3
     )
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-4)
-    img_filter.SetCurvatureScaling(7.5)
-    img_filter.SetAdvectionScaling(20.0)
+    img_filter.SetPropagationScaling(-1.25)
+    img_filter.SetCurvatureScaling(4.0)
+    img_filter.SetAdvectionScaling(15.0)
     img_filter.SetMaximumRMSError(0.005)
     img_filter.SetNumberOfIterations(500)
 
@@ -240,8 +228,10 @@ def main():
     if args.background:
         mask[mask == args.background] = 0
 
-    # Image info and Ray value initialization
-    labels = np.unique(mask)[1:]
+    # Filter out zero and small labels from labels
+    labels, counts = np.unique(mask, return_counts=True)
+    labels = [value for value, count in zip(labels, counts) if count > 4000][1:]
+
     n_labels = len(labels)
     chunk_size = args.num_chunks
 
@@ -251,24 +241,31 @@ def main():
     # Loops through Ray futures and processes chunk_size chunks at a time
     for i in range(0, n_labels, chunk_size):
         chunk_labels = labels[i:i + chunk_size]
-        futures = [process_label.remote(mask, image, label) for label in chunk_labels if label != 0]
+        futures = [
+            process_label.remote(mask, image, label)
+            for label in chunk_labels
+        ]
         pending_futures.extend(futures)
 
         if len(pending_futures) >= chunk_size:
-            ready_futures, remaining_futures = ray.wait(pending_futures, num_returns=len(pending_futures))
+            ready_futures, remaining_futures = ray.wait(
+                pending_futures, num_returns=len(pending_futures)
+            )
             results = ray.get(ready_futures)
             refined_mask = update_mask(refined_mask, results)
             pending_futures = remaining_futures
 
     if pending_futures:
-        ready_futures, _ = ray.wait(pending_futures, num_returns=len(pending_futures))
+        ready_futures, _ = ray.wait(
+            pending_futures, num_returns=len(pending_futures)
+        )
         results = ray.get(ready_futures)
         refined_mask = update_mask(refined_mask, results)
 
-    # Unpad mask
-    refined_mask = refined_mask[16:-16, :, :]
+    # Remove padded edges from mask
+    refined_mask = refined_mask[16:-16, 16:-16, 16:-16]
 
-    # Save refined masks
+    # Save refined mask
     save_path = mask_path.parent / "refined_mask.tif"
     imwrite(save_path, refined_mask)
 
