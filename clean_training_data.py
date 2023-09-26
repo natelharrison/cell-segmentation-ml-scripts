@@ -26,11 +26,10 @@ parser.add_argument('--visualize', action='store_true', help='Flag to enable vis
 args = parser.parse_args()
 
 if args.object_store_memory is None:
-    ray.init(address='auto')
+    ray.init()
 else:
     object_store_memory = args.object_store_memory * 10 ** 9
-    ray.init(address='auto',
-             object_store_memory=object_store_memory,
+    ray.init(object_store_memory=object_store_memory,
              num_cpus=args.num_chunks)
 
 
