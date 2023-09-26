@@ -185,7 +185,7 @@ def active_contour(
     )
 
     gradient_magnitude = sitk.GradientMagnitudeRecursiveGaussian(
-        itk_image, sigma=3
+        itk_image, sigma=7
     )
 
     # Geodesic active contour filter initialization
