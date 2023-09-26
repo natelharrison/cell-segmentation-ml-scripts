@@ -35,12 +35,23 @@ else:
 
 def get_label_slice(mask: np.ndarray) -> ndarray[int]:
     """
-    Get the index of the slice with the most prominent label in a 3D binary mask.
+    Get the index of the slice with the most prominent label
     :param mask: np.ndarray: The 3D binary mask.
     :return ndarray[int]: The index of the prominent slice.
     """
     slice_sums = mask.sum(axis=(1, 2))
     return np.argmax(slice_sums)
+
+
+def pad_image(image: np.ndarray, pad_width: int = 16) -> np.ndarray:
+    """
+    Pad image along top and bottom for active contour
+    :param image:
+    :param pad_width:
+    :return:
+    """
+    padding = ((pad_width, pad_width), (0, 0), (0, 0))
+    return np.pad(image, padding, mode='reflect')
 
 
 def visualize_3d_slice(
@@ -217,6 +228,10 @@ def main():
     image = imread(image_path)
     mask = imread(mask_path)
 
+    # Pad image and mask along z-axis
+    image = pad_image(image)
+    mask = pad_image(mask)
+
     # Normalize image
     img_min, img_max = np.percentile(image, (1, 99))
     image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
@@ -249,6 +264,9 @@ def main():
         ready_futures, _ = ray.wait(pending_futures, num_returns=len(pending_futures))
         results = ray.get(ready_futures)
         refined_mask = update_mask(refined_mask, results)
+
+    # Unpad mask
+    refined_mask = refined_mask[16:-16, :, :]
 
     # Save refined masks
     save_path = mask_path.parent / "refined_mask.tif"
