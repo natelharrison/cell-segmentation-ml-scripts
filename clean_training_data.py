@@ -12,6 +12,8 @@ import SimpleITK as sitk
 
 from numpy import ndarray
 from pathlib import Path
+
+from skimage import exposure
 from tifffile import imread, imwrite
 
 parser = argparse.ArgumentParser()
@@ -187,10 +189,10 @@ def active_contour(
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-1)
+    img_filter.SetPropagationScaling(-1.5)
     img_filter.SetCurvatureScaling(5.0)
     img_filter.SetAdvectionScaling(15.0)
-    img_filter.SetMaximumRMSError(0.01)
+    img_filter.SetMaximumRMSError(0.005)
     img_filter.SetNumberOfIterations(500)
 
     refined_mask = img_filter.Execute(itk_mask, gradient_magnitude)
@@ -211,25 +213,18 @@ def main():
     image_path: Union[str, Path] = Path(args.image_path)
     mask_path: Union[str, Path] = Path(args.mask_path)
 
-    image: np.ndarray = imread(image_path)
-    mask: np.ndarray = imread(mask_path)
+    image = imread(image_path)
+    mask = imread(mask_path)
+
+    # Normalize image
+    img_min, img_max = np.percentile(image, (1, 99))
+    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     # Remove background with label value 1 from mask
     if args.background:
         mask[mask == args.background] = 0
 
-    # Visualize each label as they are computed. Does not save outputs.
-    # Not working with ray
-    # target_label = None
-    # if args.visualize:
-    #     labels, pixel_count = np.unique(mask, return_counts=True)
-    #     valid_labels = labels[np.where(pixel_count >= 1000)[0]]
-    #     if target_label is not None:
-    #         valid_labels = [0, target_label]
-    #     for label in valid_labels[1:]:
-    #         _ = process_label((image, mask, label))
-    #     return
-
+    # Image info and Ray value initialization
     labels = np.unique(mask)[1:]
     n_labels = len(labels)
     chunk_size = args.num_chunks
@@ -237,6 +232,7 @@ def main():
     pending_futures = []
     refined_mask = np.zeros_like(mask)
 
+    # Loops through Ray futures and processes chunk_size chunks at a time
     for i in range(0, n_labels, chunk_size):
         chunk_labels = labels[i:i + chunk_size]
         futures = [process_label.remote(mask, image, label) for label in chunk_labels if label != 0]
