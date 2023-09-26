@@ -182,15 +182,15 @@ def active_contour(
     )
 
     gradient_magnitude = sitk.GradientMagnitudeRecursiveGaussian(
-        itk_image, sigma=2.5
+        itk_image, sigma=2
     )
 
     # Geodesic active contour filter initialization
     img_filter = sitk.GeodesicActiveContourLevelSetImageFilter()
-    img_filter.SetPropagationScaling(-2)
+    img_filter.SetPropagationScaling(-1)
     img_filter.SetCurvatureScaling(5.0)
-    img_filter.SetAdvectionScaling(10.0)
-    img_filter.SetMaximumRMSError(0.005)
+    img_filter.SetAdvectionScaling(15.0)
+    img_filter.SetMaximumRMSError(0.01)
     img_filter.SetNumberOfIterations(500)
 
     refined_mask = img_filter.Execute(itk_mask, gradient_magnitude)
