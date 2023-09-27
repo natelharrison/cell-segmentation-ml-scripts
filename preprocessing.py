@@ -8,6 +8,8 @@ import numpy as np
 
 from pathlib import Path
 from shutil import rmtree
+
+from skimage import exposure
 from tqdm.contrib import itertools
 from tifffile import imread, imwrite
 from numpy.lib.stride_tricks import sliding_window_view
@@ -94,6 +96,10 @@ def get_tiles(
 
     print(f"Tiles will be saved to {save_path}")
     # Create crops along XY, ZY, and ZX axes
+
+    # Normalize image
+    img_min, img_max = np.percentile(image, (1, 99))
+    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     dims = 1 if args.crop_size[0] != 1 else 3
 
