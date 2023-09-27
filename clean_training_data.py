@@ -268,7 +268,7 @@ def main():
         refined_mask = update_mask(refined_mask, results)
 
     # Remove padded edges from mask
-    refined_mask = refined_mask[16:-16, 16:-16, 16:-16]
+    refined_mask = refined_mask[8:-8, 8:-8, 8:-8]
 
     # Save refined mask
     save_path = mask_path.parent / "refined_mask.tif"
