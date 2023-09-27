@@ -80,7 +80,7 @@ def visualize_3d_slice(
     plt.show()
 
 
-def pad_image(image: np.ndarray, pad_width: int = 16) -> np.ndarray:
+def pad_image(image: np.ndarray, pad_width: int = 8) -> np.ndarray:
     """
     Pad image along edges to reduce errors in calculating active contour.
     :param image: Image or mask to be padded
@@ -94,6 +94,11 @@ def pad_image(image: np.ndarray, pad_width: int = 16) -> np.ndarray:
 
 
 def update_mask(refined_mask, results):
+    """
+    :param refined_mask:
+    :param results:
+    :return:
+    """
     for binary_mask, label in results:
         if binary_mask is not None:
             refined_mask[binary_mask] = label
