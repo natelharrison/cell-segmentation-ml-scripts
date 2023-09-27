@@ -98,8 +98,9 @@ def get_tiles(
     # Create crops along XY, ZY, and ZX axes
 
     # Normalize image
-    img_min, img_max = np.percentile(image, (1, 99))
-    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
+    if "mask" not in image_path.stem:
+        img_min, img_max = np.percentile(image, (1, 99))
+        image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     dims = 1 if args.crop_size[0] != 1 else 3
 
