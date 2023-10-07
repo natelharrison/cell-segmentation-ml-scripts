@@ -47,8 +47,8 @@ def main():
     print(f"Read image with shape: {image.shape}")
 
     # Normalize image
-    img_min, img_max = np.percentile(image, (1, 99))
-    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
+    # img_min, img_max = np.percentile(image, (1, 99))
+    # image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     batch_size = 16
     while True:
