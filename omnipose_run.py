@@ -127,7 +127,7 @@ def main():
         suppress=True,  # this option opened up now
         eps=None,
         hdbscan=False,
-        flow_factor=10,  # not needed with supression off and niter set manually
+        flow_factor=20,  # not needed with supression off and niter set manually
         debug=False,
         override=False)
 
