@@ -104,7 +104,7 @@ def main():
         p=None,
         inds=None,
         niter=100,
-        rescale=1.0,
+        rescale=0.5,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
         diam_threshold=32,
@@ -118,14 +118,14 @@ def main():
         max_size=None,
         hole_size=None,
         omni=True,
-        calc_trace=True,
+        calc_trace=False,
         verbose=True,
         use_gpu=True,
         device=model.device,
         nclasses=2,
         dim=3,
         suppress=False,  # this option opened up now
-        eps=1,
+        eps=None,
         hdbscan=False,
         flow_factor=5,  # not needed with supression off and niter set manually
         debug=False,
