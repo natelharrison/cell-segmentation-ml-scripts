@@ -103,7 +103,7 @@ def main():
         bd=None,
         p=None,
         inds=None,
-        niter=120,
+        niter=100000,
         rescale=1,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
@@ -124,10 +124,10 @@ def main():
         device=model.device,
         nclasses=2,
         dim=3,
-        suppress=False,  # this option opened up now
+        suppress=True,  # this option opened up now
         eps=None,
         hdbscan=False,
-        flow_factor=5,  # not needed with supression off and niter set manually
+        flow_factor=10,  # not needed with supression off and niter set manually
         debug=False,
         override=False)
 
