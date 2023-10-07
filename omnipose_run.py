@@ -103,14 +103,14 @@ def main():
         bd=None,
         p=None,
         inds=None,
-        niter=100,
-        rescale=2.0,
+        niter=120,
+        rescale=1,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
         diam_threshold=32,
         flow_threshold=0,
         interp=True,
-        cluster=True,  # speed and less undersegmentation
+        cluster=False,  # speed and less undersegmentation
         boundary_seg=False,
         affinity_seg=False,
         do_3D=False,
