@@ -104,7 +104,7 @@ def main():
         p=None,
         inds=None,
         niter=100,
-        rescale=0.5,
+        rescale=2.0,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
         diam_threshold=32,
