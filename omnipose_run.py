@@ -73,22 +73,24 @@ def main():
                 compute_masks=True,
                 suppress=False,
                 omni=True,
-                niter=170,
-                cluster=False,
+                niter=100,
+                cluster=True,
                 verbose=True,
                 tile=True,
-                bsize=224,
+                bsize=114,
                 channels=None,
                 rescale=None,
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
                 augment=True,
-                mask_threshold=0,
+                mask_threshold=2,
                 net_avg=False,
                 min_size=4000,
                 transparency=True,
-                flow_threshold=0
+                flow_threshold=0,
+                hdbscan=True,
+                eps=1
             )
             break
 
