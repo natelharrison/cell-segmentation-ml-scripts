@@ -1,15 +1,14 @@
 import os
-import time
-import torch
 import argparse
-import tifffile
-import threading
-import numpy as np
-
 from pathlib import Path
 from datetime import datetime
-from cellpose_omni import io, core
+
+import torch
+import tifffile
+import numpy as np
+from cellpose_omni import io
 from cellpose_omni import models
+from skimage import exposure
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -19,21 +18,6 @@ parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
-
-gpu_memory_logs = []
-stop_event = threading.Event()
-
-
-def monitor_gpu(interval=1):
-    num_gpus = torch.cuda.device_count()
-    while not stop_event.is_set():
-        mem_info = [
-            torch.cuda.memory_allocated(device=i) / 1024 ** 3
-            for i in range(num_gpus)
-        ]
-        gpu_memory_logs.append(mem_info)
-        print(f"GPU Memory Used: {mem_info} GiB")
-        time.sleep(interval)
 
 
 def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
@@ -61,6 +45,10 @@ def main():
     image_name = image_path.name
     image = io.imread(image_path.as_posix())
     print(f"Read image with shape: {image.shape}")
+
+    # Normalize image
+    img_min, img_max = np.percentile(image, (1, 99))
+    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     batch_size = 16
     while True:
@@ -119,10 +107,4 @@ def main():
 
 
 if __name__ == '__main__':
-    t = threading.Thread(target=monitor_gpu)
-    t.start()
-
     main()
-
-    stop_event.set()
-    t.join()
