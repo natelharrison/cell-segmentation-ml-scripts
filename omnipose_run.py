@@ -60,24 +60,23 @@ def main():
                 image,
                 batch_size=batch_size,
                 compute_masks=True,
-                suppress=False,
                 omni=True,
                 niter=1,
-                cluster=True,
+                cluster=False,
                 verbose=True,
                 tile=True,
-                bsize=114,
+                bsize=112,
                 channels=None,
                 rescale=None,
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=True,
-                mask_threshold=2,
+                augment=False,
+                mask_threshold=1,
                 net_avg=False,
                 min_size=4000,
                 transparency=True,
-                flow_threshold=0
+                flow_threshold=-5
             )
             break
 
