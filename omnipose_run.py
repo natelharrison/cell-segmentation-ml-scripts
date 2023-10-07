@@ -107,7 +107,7 @@ def main():
         rescale=1.0,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
-        diam_threshold=None,
+        diam_threshold=32,
         flow_threshold=0,
         interp=True,
         cluster=True,  # speed and less undersegmentation
