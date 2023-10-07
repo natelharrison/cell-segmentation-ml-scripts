@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
+import omnipose
 import torch
 import tifffile
 import numpy as np
@@ -54,14 +55,14 @@ def main():
     while True:
         try:
             # Run predictions
-            mask, flow = run_predictions(
+            _, flow = run_predictions(
                 model,
                 image,
                 batch_size=batch_size,
                 compute_masks=True,
                 suppress=False,
                 omni=True,
-                niter=100,
+                niter=1,
                 cluster=True,
                 verbose=True,
                 tile=True,
@@ -76,9 +77,7 @@ def main():
                 net_avg=False,
                 min_size=4000,
                 transparency=True,
-                flow_threshold=0,
-                hdbscan=True,
-                eps=1
+                flow_threshold=0
             )
             break
 
@@ -94,6 +93,46 @@ def main():
             print(f"Batch size of {batch_size} is too large. Halving the batch size...")
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
+
+    dP = flow[1]
+    dist = flow[2]
+    # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
+
+    ret = omnipose.core.compute_masks(
+        dP,
+        dist,
+        bd=None,
+        p=None,
+        inds=None,
+        niter=100,
+        rescale=1.0,
+        resize=None,
+        mask_threshold=2,  # raise this higher to recede boundaries
+        diam_threshold=None,
+        flow_threshold=0,
+        interp=True,
+        cluster=True,  # speed and less undersegmentation
+        boundary_seg=False,
+        affinity_seg=False,
+        do_3D=False,
+        min_size=4000,
+        max_size=None,
+        hole_size=None,
+        omni=True,
+        calc_trace=False,
+        verbose=True,
+        use_gpu=True,
+        device=model.device,
+        nclasses=2,
+        dim=3,
+        suppress=False,  # this option opened up now
+        eps=1,
+        hdbscan=True,
+        flow_factor=5,  # not needed with supression off and niter set manually
+        debug=False,
+        override=False)
+
+    mask = ret[0]
 
     # Save masks
     save_dir = image_path.parent / f"{image_name}_predicted_masks"
