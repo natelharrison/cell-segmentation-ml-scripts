@@ -118,7 +118,7 @@ def main():
         max_size=None,
         hole_size=None,
         omni=True,
-        calc_trace=False,
+        calc_trace=True,
         verbose=True,
         use_gpu=True,
         device=model.device,
@@ -126,7 +126,7 @@ def main():
         dim=3,
         suppress=False,  # this option opened up now
         eps=1,
-        hdbscan=True,
+        hdbscan=False,
         flow_factor=5,  # not needed with supression off and niter set manually
         debug=False,
         override=False)
