@@ -71,7 +71,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=False,
+                augment=True,
                 mask_threshold=1,
                 net_avg=False,
                 min_size=4000,
@@ -103,7 +103,7 @@ def main():
         bd=None,
         p=None,
         inds=None,
-        niter=100000,
+        niter=1000000,
         rescale=1,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
@@ -127,7 +127,7 @@ def main():
         suppress=True,  # this option opened up now
         eps=None,
         hdbscan=False,
-        flow_factor=20,  # not needed with supression off and niter set manually
+        flow_factor=5,  # not needed with supression off and niter set manually
         debug=False,
         override=False)
 
