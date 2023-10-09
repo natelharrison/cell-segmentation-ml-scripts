@@ -103,7 +103,7 @@ def main():
         bd=None,
         p=None,
         inds=None,
-        niter=100,
+        niter=1000,
         rescale=1,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
