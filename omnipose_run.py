@@ -71,7 +71,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=True,
+                augment=False,
                 mask_threshold=1,
                 net_avg=False,
                 min_size=4000,
