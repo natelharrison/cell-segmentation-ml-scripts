@@ -64,7 +64,7 @@ def main():
                 niter=1,
                 cluster=False,
                 verbose=True,
-                tile=True,
+                tile=False,
                 bsize=114,
                 channels=None,
                 rescale=None,
