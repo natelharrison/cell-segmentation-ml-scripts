@@ -71,7 +71,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=True,
+                augment=False,
                 mask_threshold=1,
                 net_avg=False,
                 min_size=4000,
@@ -103,7 +103,7 @@ def main():
         bd=None,
         p=None,
         inds=None,
-        niter=1000000,
+        niter=100,
         rescale=1,
         resize=None,
         mask_threshold=2,  # raise this higher to recede boundaries
