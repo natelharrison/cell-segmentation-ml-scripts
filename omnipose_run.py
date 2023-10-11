@@ -27,11 +27,24 @@ def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
     )
 
 
-def run_predictions(
+def run_flow_prediction(
         model: models.CellposeModel, image: np.ndarray, **kwargs
 ):
     masks, flows, _ = model.eval(image, **kwargs)
     return masks, flows
+
+
+def run_mask_prediction(flow, **kwargs):
+    dP = flow[1]
+    dist = flow[2]
+
+    # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
+    ret = omnipose.core.compute_masks(dP, dist, **kwargs)
+    mask = ret[0]
+
+    kwargs_str = ', '.join([f"{key}={value}" for key, value in kwargs.items()])
+
+    return mask, kwargs_str
 
 
 def main():
@@ -55,7 +68,7 @@ def main():
     while True:
         try:
             # Run predictions
-            _, flow = run_predictions(
+            _, flow = run_flow_prediction(
                 model,
                 image,
                 batch_size=batch_size,
@@ -64,74 +77,73 @@ def main():
                 niter=1,
                 cluster=False,
                 verbose=True,
-                tile=False,
-                bsize=114,
+                tile=True,
+                bsize=224,
                 channels=None,
                 rescale=None,
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=False,
+                augment=True,
                 mask_threshold=1,
                 net_avg=False,
                 min_size=4000,
                 transparency=True,
                 flow_threshold=-5
             )
+
+            mask, kwargs = run_mask_prediction(
+                flow,
+                bd=None,
+                p=None,
+                inds=None,
+                niter=1000000,
+                rescale=1,
+                resize=None,
+                mask_threshold=2,  # raise to recede boundaries
+                diam_threshold=32,
+                flow_threshold=0,
+                interp=True,
+                cluster=False,  # speed and less under-segmentation
+                boundary_seg=False,
+                affinity_seg=False,
+                do_3D=False,
+                min_size=4000,
+                max_size=None,
+                hole_size=5,
+                omni=True,
+                calc_trace=True,
+                verbose=True,
+                use_gpu=True,
+                device=model.device,
+                nclasses=2,
+                dim=3,
+                suppress=False,
+                eps=None,
+                hdbscan=False,
+                flow_factor=5,  # not needed with suppression off
+                debug=False,
+                override=False)
             break
 
         except RuntimeError as e:
-            if "out of memory" not in str(e) and "output.numel()" not in str(e):
+            if ("out of memory" not in str(e)
+                    and "output.numel()" not in str(e)):
                 raise e
 
             # Check if batch size already 1
             if batch_size <= 1:
-                raise ValueError("Out of memory error even with batch size of 1") from e
+                raise ValueError(
+                    "Out of memory error even with batch size of 1"
+                ) from e
 
             # Reduce batch size and rerun
-            print(f"Batch size of {batch_size} is too large. Halving the batch size...")
+            print(
+                f"Batch size of {batch_size} is too large. "
+                f"Halving the batch size..."
+            )
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
-
-    dP = flow[1]
-    dist = flow[2]
-    # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
-
-    ret = omnipose.core.compute_masks(
-        dP,
-        dist,
-        bd=None,
-        p=None,
-        inds=None,
-        niter=1000000,
-        rescale=1,
-        resize=None,
-        mask_threshold=2,  # raise this higher to recede boundaries
-        diam_threshold=32,
-        flow_threshold=0,
-        interp=True,
-        cluster=False,  # speed and less undersegmentation
-        boundary_seg=False,
-        affinity_seg=False,
-        do_3D=False,
-        min_size=4000,
-        max_size=None,
-        hole_size=None,
-        omni=True,
-        calc_trace=False,
-        verbose=True,
-        use_gpu=True,
-        device=model.device,
-        nclasses=2,
-        dim=3,
-        suppress=True,  # this option opened up now
-        eps=None,
-        hdbscan=False,
-        flow_factor=5,  # not needed with supression off and niter set manually
-        debug=False,
-        override=False)
-
-    mask = ret[0]
 
     # Save masks
     save_dir = image_path.parent / f"{image_name}_predicted_masks"
