@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', type=str, default='')
 parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
+parser.add_argument('--pretrained', type=str, default=None)
 parser.add_argument('--chunks', type=int, nargs='+', default=None)
 parser.add_argument('--kwargs', type=str,
                     default='{"diameter": 30, "do_3D": true, "min_size": 2000, "augment": true, "normalize": true, "cellprob_threshold": -0.1}')
@@ -79,6 +80,9 @@ def main():
             # Load model
             model_path = Path(args.model)
             model = load_model(model_path)
+
+            if args.pretrained:
+                model = args.pretrained
 
             # Load image info
             image_path = Path(args.image_path)
