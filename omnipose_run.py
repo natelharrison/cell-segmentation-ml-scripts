@@ -91,7 +91,7 @@ def main():
                 flow_threshold=-5
             )
 
-            iter_list = [10000]
+            iter_list = [20]
             for niter in iter_list:
                 mask, kwargs = run_mask_prediction(
                     flow,
@@ -119,7 +119,7 @@ def main():
                     device=model.device,
                     nclasses=2,
                     dim=3,
-                    suppress=True,
+                    suppress=False,
                     eps=None,
                     hdbscan=False,
                     flow_factor=5,  # not needed with suppression off
