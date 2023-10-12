@@ -41,7 +41,7 @@ def run_mask_prediction(flow, **kwargs):
     ret = omnipose.core.compute_masks(dP, dist, **kwargs)
     mask = ret[0]
 
-    kwargs_str = ', '.join([f"{key}={value}" for key, value in kwargs.items()])
+    kwargs_str = '_'.join([f"{key}={value}" for key, value in kwargs.items()])
 
     return mask, kwargs_str
 
