@@ -105,13 +105,13 @@ def main():
             channels = [[0, 0]]
             image_tiles, overlap = tile_image(image_path)
 
-            # if overlap is not None:
-            #     tile_map = da.map_overlap(
-            #         lambda tile: run_predictions(model, tile, channels, **kwargs),
-            #         image_tiles,
-            #         depth=overlap,
-            #         dtype=int
-            #     )
+            if overlap is not None:
+                tile_map = da.map_overlap(
+                    lambda tile: run_predictions(model, tile, channels, **kwargs),
+                    image_tiles,
+                    depth=overlap,
+                    dtype=int
+                )
 
             else:
                 tile_map = da.map_blocks(
