@@ -67,13 +67,13 @@ def main():
     while True:
         try:
             # Run predictions
-            _, flow = run_flow_prediction(
+            mask, flow = run_flow_prediction(
                 model,
                 image,
                 batch_size=batch_size,
                 compute_masks=True,
                 omni=True,
-                niter=1,
+                niter=40,
                 cluster=False,
                 verbose=True,
                 tile=True,
@@ -86,56 +86,57 @@ def main():
                 augment=True,
                 mask_threshold=1,
                 net_avg=False,
+                suppress=False,
                 min_size=4000,
                 transparency=True,
                 flow_threshold=-5
             )
 
-            iter_list = [40]
-            for niter in iter_list:
-                mask, kwargs = run_mask_prediction(
-                    flow,
-                    bd=None,
-                    p=None,
-                    inds=None,
-                    niter=niter,
-                    rescale=1,
-                    resize=None,
-                    mask_threshold=0,  # raise to recede boundaries
-                    diam_threshold=32,
-                    flow_threshold=-5,
-                    interp=True,
-                    cluster=False,  # speed and less under-segmentation
-                    boundary_seg=False,
-                    affinity_seg=False,
-                    do_3D=False,
-                    min_size=4000,
-                    max_size=None,
-                    hole_size=None,
-                    omni=True,
-                    calc_trace=False,
-                    verbose=True,
-                    use_gpu=True,
-                    device=model.device,
-                    nclasses=2,
-                    dim=3,
-                    suppress=False,
-                    eps=None,
-                    hdbscan=False,
-                    flow_factor=5,  # not needed with suppression off
-                    debug=False,
-                    override=False)
+            # iter_list = [40]
+            # for niter in iter_list:
+            #     mask, kwargs = run_mask_prediction(
+            #         flow,
+            #         bd=None,
+            #         p=None,
+            #         inds=None,
+            #         niter=niter,
+            #         rescale=1,
+            #         resize=None,
+            #         mask_threshold=0,  # raise to recede boundaries
+            #         diam_threshold=32,
+            #         flow_threshold=-5,
+            #         interp=True,
+            #         cluster=False,  # speed and less under-segmentation
+            #         boundary_seg=False,
+            #         affinity_seg=False,
+            #         do_3D=False,
+            #         min_size=4000,
+            #         max_size=None,
+            #         hole_size=None,
+            #         omni=True,
+            #         calc_trace=False,
+            #         verbose=True,
+            #         use_gpu=True,
+            #         device=model.device,
+            #         nclasses=2,
+            #         dim=3,
+            #         suppress=False,
+            #         eps=None,
+            #         hdbscan=False,
+            #         flow_factor=5,  # not needed with suppression off
+            #         debug=False,
+            #         override=False)
 
-                # Save masks
-                save_dir = image_path.parent / f"{image_name}_predicted_masks"
-                os.makedirs(save_dir.as_posix(), exist_ok=True)
+            # Save masks
+            save_dir = image_path.parent / f"{image_name}_predicted_masks"
+            os.makedirs(save_dir.as_posix(), exist_ok=True)
 
-                save_name = f"20_noaug_{image_name}_predicted_masks{args.save_name}.tif"
-                # save_name = f"{kwargs}.tif"
-                save_path = save_dir / save_name
+            save_name = f"20_noaug_{image_name}_predicted_masks{args.save_name}.tif"
+            # save_name = f"{kwargs}.tif"
+            save_path = save_dir / save_name
 
-                print(f"Saving masks to {save_path.as_posix()}")
-                tifffile.imwrite(save_path, mask)
+            print(f"Saving masks to {save_path.as_posix()}")
+            tifffile.imwrite(save_path, mask)
 
             break
 
