@@ -83,7 +83,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=True,
+                augment=False,
                 mask_threshold=1,
                 net_avg=False,
                 min_size=4000,
@@ -130,7 +130,7 @@ def main():
                 save_dir = image_path.parent / f"{image_name}_predicted_masks"
                 os.makedirs(save_dir.as_posix(), exist_ok=True)
 
-                save_name = f"{niter}_{image_name}_predicted_masks{args.save_name}.tif"
+                save_name = f"20_noaug_{image_name}_predicted_masks{args.save_name}.tif"
                 # save_name = f"{kwargs}.tif"
                 save_path = save_dir / save_name
 
