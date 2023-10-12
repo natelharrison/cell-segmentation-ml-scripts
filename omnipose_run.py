@@ -73,7 +73,7 @@ def main():
                 batch_size=batch_size,
                 compute_masks=True,
                 omni=True,
-                niter=120,
+                niter=1,
                 cluster=False,
                 verbose=True,
                 tile=True,
