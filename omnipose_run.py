@@ -125,6 +125,18 @@ def main():
                     flow_factor=5,  # not needed with suppression off
                     debug=False,
                     override=False)
+
+                # Save masks
+                save_dir = image_path.parent / f"{image_name}_predicted_masks"
+                os.makedirs(save_dir.as_posix(), exist_ok=True)
+
+                # save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
+                save_name = f"{kwargs}.tif"
+                save_path = save_dir / save_name
+
+                print(f"Saving masks to {save_path.as_posix()}")
+                tifffile.imwrite(save_path, mask)
+
             break
 
         except RuntimeError as e:
@@ -145,16 +157,6 @@ def main():
             )
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
-
-    # Save masks
-    save_dir = image_path.parent / f"{image_name}_predicted_masks"
-    os.makedirs(save_dir.as_posix(), exist_ok=True)
-
-    save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
-    save_path = save_dir / save_name
-
-    print(f"Saving masks to {save_path.as_posix()}")
-    tifffile.imwrite(save_path, mask)
 
 
 if __name__ == '__main__':
