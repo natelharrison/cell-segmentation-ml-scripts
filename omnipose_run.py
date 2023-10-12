@@ -9,7 +9,6 @@ import tifffile
 import numpy as np
 from cellpose_omni import io
 from cellpose_omni import models
-from skimage import exposure
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -92,38 +91,40 @@ def main():
                 flow_threshold=-5
             )
 
-            mask, kwargs = run_mask_prediction(
-                flow,
-                bd=None,
-                p=None,
-                inds=None,
-                niter=1000000,
-                rescale=1,
-                resize=None,
-                mask_threshold=2,  # raise to recede boundaries
-                diam_threshold=32,
-                flow_threshold=0,
-                interp=True,
-                cluster=False,  # speed and less under-segmentation
-                boundary_seg=False,
-                affinity_seg=False,
-                do_3D=False,
-                min_size=4000,
-                max_size=None,
-                hole_size=5,
-                omni=True,
-                calc_trace=True,
-                verbose=True,
-                use_gpu=True,
-                device=model.device,
-                nclasses=2,
-                dim=3,
-                suppress=False,
-                eps=None,
-                hdbscan=False,
-                flow_factor=5,  # not needed with suppression off
-                debug=False,
-                override=False)
+            iter_list = [80, 100, 120, 140]
+            for niter in iter_list:
+                mask, kwargs = run_mask_prediction(
+                    flow,
+                    bd=None,
+                    p=None,
+                    inds=None,
+                    niter=niter,
+                    rescale=1,
+                    resize=None,
+                    mask_threshold=4,  # raise to recede boundaries
+                    diam_threshold=32,
+                    flow_threshold=-0.1,
+                    interp=True,
+                    cluster=False,  # speed and less under-segmentation
+                    boundary_seg=False,
+                    affinity_seg=False,
+                    do_3D=False,
+                    min_size=4000,
+                    max_size=None,
+                    hole_size=5,
+                    omni=True,
+                    calc_trace=False,
+                    verbose=True,
+                    use_gpu=True,
+                    device=model.device,
+                    nclasses=2,
+                    dim=3,
+                    suppress=False,
+                    eps=None,
+                    hdbscan=False,
+                    flow_factor=5,  # not needed with suppression off
+                    debug=False,
+                    override=False)
             break
 
         except RuntimeError as e:
