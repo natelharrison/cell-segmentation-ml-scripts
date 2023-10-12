@@ -80,7 +80,7 @@ def main():
                 bsize=224,
                 channels=None,
                 rescale=None,
-                flow_factor=10,
+                flow_factor=120,
                 normalize=True,
                 diameter=None,
                 augment=True,
