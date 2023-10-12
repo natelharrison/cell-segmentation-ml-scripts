@@ -59,7 +59,7 @@ def tile_image(image_path: Path):
     chunks = image.shape
 
     if args.split is not None:
-        chunks = (image.shape[0]//int(args.split), image.shape[1], image.shape[2])
+        chunks = (image.shape[0]//int(args.split), image.shape[1]//int(args.split), image.shape[2]//int(args.split))
         overlap = int(image.shape[0]//10)
 
     if args.chunks is not None:
