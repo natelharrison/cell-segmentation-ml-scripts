@@ -101,7 +101,7 @@ def main():
                     niter=niter,
                     rescale=1,
                     resize=None,
-                    mask_threshold=4,  # raise to recede boundaries
+                    mask_threshold=0,  # raise to recede boundaries
                     diam_threshold=32,
                     flow_threshold=-5,
                     interp=True,
