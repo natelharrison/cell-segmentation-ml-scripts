@@ -30,6 +30,8 @@ parser.add_argument('--kwargs', type=str,
                     default='{"diameter": 30, "do_3D": true, "min_size": 2000, "augment": true, "normalize": false, "cellprob_threshold": -0.1}')
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
+parser.add_argument('--split', type=str, default=None)
+
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +57,10 @@ def tile_image(image_path: Path):
     image = imread(image_path.as_posix())
     overlap = None
     chunks = image.shape
+
+    if args.split is not None:
+        chunks[0] = image.shape[0]//args.split
+        overlap = int(image.shape[0]//10)
 
     if args.chunks is not None:
         chunks = args.chunks
@@ -99,13 +105,13 @@ def main():
             channels = [[0, 0]]
             image_tiles, overlap = tile_image(image_path)
 
-            if overlap is not None:
-                tile_map = da.map_overlap(
-                    lambda tile: run_predictions(model, tile, channels, **kwargs),
-                    image_tiles,
-                    depth=overlap,
-                    dtype=int
-                )
+            # if overlap is not None:
+            #     tile_map = da.map_overlap(
+            #         lambda tile: run_predictions(model, tile, channels, **kwargs),
+            #         image_tiles,
+            #         depth=overlap,
+            #         dtype=int
+            #     )
 
             else:
                 tile_map = da.map_blocks(
@@ -117,6 +123,40 @@ def main():
                 predictions = tile_map.compute()
 
             imwrite(save_dir / image_name, predictions)
+
+# def main():
+#     # Load model
+#     model_path = Path(args.model)
+#     model = load_model(model_path)
+#
+#     # Load image info
+#     image_path = Path(args.image_path)
+#     image_name = image_path.name
+#
+#     # File structuring
+#     save_name = args.save_name
+#     batch_num = args.batch_num
+#     save_dir = image_path.parent / save_name
+#     if batch_num is not None:
+#         save_dir = save_dir / model_path.stem
+#         image_name = f"{batch_num}_{image_name}"
+#     os.makedirs(save_dir, exist_ok=True)
+#
+#     # Kwargs handling
+#     try:
+#         kwargs = json.loads(args.kwargs)
+#     except ValueError as e:
+#         print(f"Error parsing kwargs: {args.kwargs}")
+#         raise e
+#     logging.info(f"Running cellpose with following kwargs: {kwargs}")
+#
+#     channels = [[0, 0]]
+#     image = imread(image_path.as_posix())
+#
+#     mask = run_predictions(model, image, channels, **kwargs)
+#
+#     imwrite(save_dir / image_name, mask)
+
 
 
 if __name__ == '__main__':
