@@ -27,7 +27,7 @@ parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--chunks', type=int, nargs='+', default=None)
 parser.add_argument('--kwargs', type=str,
-                    default='{"diameter": 30, "do_3D": true, "min_size": 2000, "augment": true, "normalize": True, "cellprob_threshold": -0.1}')
+                    default='{"diameter": 30, "do_3D": true, "min_size": 2000, "augment": true, "normalize": true, "cellprob_threshold": -0.1}')
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
 parser.add_argument('--split', type=str, default=None)
