@@ -127,16 +127,16 @@ def main():
                     debug=False,
                     override=False)
 
-            # Save masks
-            save_dir = image_path.parent / f"{image_name}_predicted_masks"
-            os.makedirs(save_dir.as_posix(), exist_ok=True)
+                # Save masks
+                save_dir = image_path.parent / f"{image_name}_predicted_masks"
+                os.makedirs(save_dir.as_posix(), exist_ok=True)
 
-            save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
-            # save_name = f"{kwargs}.tif"
-            save_path = save_dir / save_name
+                save_name = f"{image_name}_predicted_masks{args.save_name}.tif"
+                # save_name = f"{kwargs}.tif"
+                save_path = save_dir / save_name
 
-            print(f"Saving masks to {save_path.as_posix()}")
-            tifffile.imwrite(save_path, mask)
+                print(f"Saving masks to {save_path.as_posix()}")
+                tifffile.imwrite(save_path, mask)
 
             break
 
