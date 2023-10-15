@@ -121,9 +121,9 @@ def main():
                     nclasses=2,
                     dim=3,
                     suppress=False,
-                    eps=None,
-                    hdbscan=True,
-                    min_samples=500,
+                    eps=25,
+                    hdbscan=False,
+                    min_samples=400,
                     flow_factor=5,  # not needed with suppression off
                     debug=False,
                     override=False)
