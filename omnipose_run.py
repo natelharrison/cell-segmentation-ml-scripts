@@ -128,10 +128,10 @@ def main():
                     override=False)
 
                 # Save masks
-                save_dir = image_path.parent / f"{image_name}_predicted_masks"
+                save_dir = image_path.parent / f"{args.save_name}_predicted_masks"
                 os.makedirs(save_dir.as_posix(), exist_ok=True)
 
-                save_name = f"{niter}_{image_name}_predicted_masks{args.save_name}.tif"
+                save_name = f"{niter}_{image_name}_predicted_masks.tif"
                 # save_name = f"{kwargs}.tif"
                 save_path = save_dir / save_name
 
