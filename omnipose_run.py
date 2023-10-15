@@ -92,7 +92,7 @@ def main():
                 flow_threshold=-5
             )
 
-            iter_list = [40, 60, 80, 100, 120, 140]
+            iter_list = [30]
             for niter in iter_list:
                 mask, kwargs = run_mask_prediction(
                     flow,
@@ -106,7 +106,7 @@ def main():
                     diam_threshold=32,
                     flow_threshold=-10,
                     interp=True,
-                    cluster=False,  # speed and less under-segmentation
+                    cluster=True,  # speed and less under-segmentation
                     boundary_seg=False,
                     affinity_seg=False,
                     do_3D=False,
