@@ -92,7 +92,7 @@ def main():
                 flow_threshold=-5
             )
 
-            iter_list = [30, 40]
+            iter_list = [20, 30, 40]
             for niter in iter_list:
                 mask, kwargs = run_mask_prediction(
                     flow,
