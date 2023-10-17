@@ -9,6 +9,7 @@ import tifffile
 import numpy as np
 from cellpose_omni import io
 from cellpose_omni import models
+from skimage import exposure
 from sklearn.neighbors import NearestNeighbors
 from kneed import KneeLocator
 
@@ -78,8 +79,8 @@ def main():
     print(f"Read image with shape: {image.shape}")
 
     # Normalize image
-    # img_min, img_max = np.percentile(image, (1, 99))
-    # image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
+    img_min, img_max = np.percentile(image, (1, 99))
+    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     batch_size = 16
     while True:
@@ -110,7 +111,7 @@ def main():
                 flow_threshold=-5
             )
 
-            iter_list = [20, 30, 40]
+            iter_list = [10, 15, 20, 25, 30, 25]
             for niter in iter_list:
                 mask, kwargs, pixel_coords = run_mask_prediction(
                     flow,
@@ -124,7 +125,7 @@ def main():
                     diam_threshold=32,
                     flow_threshold=-10,
                     interp=True,
-                    cluster=True,  # speed and less under-segmentation
+                    cluster=False,  # speed and less under-segmentation
                     boundary_seg=False,
                     affinity_seg=False,
                     do_3D=False,
@@ -151,7 +152,6 @@ def main():
                 # Save masks
                 save_dir = image_path.parent / f"{args.save_name}_predicted_masks"
                 os.makedirs(save_dir.as_posix(), exist_ok=True)
-
                 save_name = f"{niter}_{image_name}_predicted_masks.tif"
                 # save_name = f"{kwargs}.tif"
                 save_path = save_dir / save_name
