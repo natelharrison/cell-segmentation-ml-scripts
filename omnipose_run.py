@@ -23,21 +23,6 @@ parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
 
 
-def optimal_eps(pixel_coords, n_neighbors=6):
-    newinds = pixel_coords.T
-    nearest_neighbors = NearestNeighbors(n_neighbors=n_neighbors)
-    neighbors = nearest_neighbors.fit(newinds)
-    distances, indices = neighbors.kneighbors(newinds)
-
-    k_distances = distances[:, -1]
-
-    k_distances_sorted = np.sort(k_distances)
-
-    knee_locator = KneeLocator(range(len(k_distances_sorted)), k_distances_sorted, curve="convex",
-                               direction="increasing")
-    return knee_locator.knee_y
-
-
 def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
     return models.CellposeModel(
         pretrained_model=model_path.as_posix(), **kwargs
@@ -146,8 +131,6 @@ def main():
                     flow_factor=5,  # not needed with suppression off
                     debug=False,
                     override=False)
-
-                print(optimal_eps(pixel_coords))
 
                 # Save masks
                 save_dir = image_path.parent / f"{args.save_name}_predicted_masks"
