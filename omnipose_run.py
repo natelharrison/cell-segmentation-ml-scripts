@@ -9,6 +9,8 @@ import tifffile
 import numpy as np
 from cellpose_omni import io
 from cellpose_omni import models
+from sklearn.neighbors import NearestNeighbors
+from kneed import KneeLocator
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -18,6 +20,21 @@ parser.add_argument('--image_path', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
+
+
+def optimal_eps(pixel_coords, n_neighbors=6):
+    newinds = pixel_coords.T
+    nearest_neighbors = NearestNeighbors(n_neighbors=n_neighbors)
+    neighbors = nearest_neighbors.fit(newinds)
+    distances, indices = neighbors.kneighbors(newinds)
+
+    k_distances = distances[:, -1]
+
+    k_distances_sorted = np.sort(k_distances)
+
+    knee_locator = KneeLocator(range(len(k_distances_sorted)), k_distances_sorted, curve="convex",
+                               direction="increasing")
+    return knee_locator.knee_y
 
 
 def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
@@ -40,10 +57,11 @@ def run_mask_prediction(flow, **kwargs):
     # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
     ret = omnipose.core.compute_masks(dP, dist, **kwargs)
     mask = ret[0]
+    pixel_coords = ret[1]
 
     kwargs_str = '_'.join([f"{key}={value}" for key, value in kwargs.items()])
 
-    return mask, kwargs_str
+    return mask, kwargs_str, pixel_coords
 
 
 def main():
@@ -94,7 +112,7 @@ def main():
 
             iter_list = [20, 30, 40]
             for niter in iter_list:
-                mask, kwargs = run_mask_prediction(
+                mask, kwargs, pixel_coords = run_mask_prediction(
                     flow,
                     bd=None,
                     p=None,
@@ -127,6 +145,8 @@ def main():
                     flow_factor=5,  # not needed with suppression off
                     debug=False,
                     override=False)
+
+                print(optimal_eps(pixel_coords))
 
                 # Save masks
                 save_dir = image_path.parent / f"{args.save_name}_predicted_masks"
