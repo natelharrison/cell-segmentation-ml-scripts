@@ -141,7 +141,7 @@ def main():
                     suppress=False,
                     eps=30,
                     hdbscan=False,
-                    min_samples=16,
+                    min_samples=400,
                     flow_factor=5,  # not needed with suppression off
                     debug=False,
                     override=False)
