@@ -9,8 +9,9 @@ import omnipose
 import torch
 import tifffile
 import numpy as np
-from cellpose_omni import models, metrics
+from cellpose_omni import models
 from skimage import exposure
+from cellpose import metrics
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -116,7 +117,7 @@ def main():
     img_min, img_max = np.percentile(image, (1, 99))
     image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
-    batch_size = 16
+    batch_size = 8
     while True:
         try:
             # Run predictions
@@ -136,7 +137,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=True,
+                augment=False,
                 mask_threshold=1,
                 net_avg=False,
                 suppress=False,
