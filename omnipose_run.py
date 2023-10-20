@@ -9,9 +9,9 @@ import omnipose
 import torch
 import tifffile
 import numpy as np
-from cellpose_omni import models
+from cellpose_omni import models, metrics
 from skimage import exposure
-from cellpose import metrics
+
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
