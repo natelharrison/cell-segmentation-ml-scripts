@@ -50,7 +50,7 @@ def save_tiff(
 
 
 def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
-    return metrics.average_precision([masks_true], [masks_pred], scales=[1.0])
+    return metrics.average_precision([masks_true], [masks_pred])
 
 
 def save_settings(
