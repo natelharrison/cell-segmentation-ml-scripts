@@ -50,10 +50,7 @@ def save_tiff(
 
 
 def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
-    accuracy, _, _ = metrics.boundary_scores(
-        [masks_true], [masks_pred], scales=[1.0]
-    )
-    return accuracy
+    return metrics.average_precision([masks_true], [masks_pred], scales=[1.0])
 
 
 def save_settings(
@@ -69,8 +66,8 @@ def save_settings(
     }
 
     file_name = f"{tiffs_processed}"
-    if accuracy != 0:
-        file_name = f"{tiffs_processed}_{accuracy}"
+    if accuracy is not None:
+        file_name = f"{tiffs_processed}_{accuracy[0][0]}"
     with open(f"{file_name}_settings.json", 'w') as file:
         json.dump(settings, file, indent=4)
 
