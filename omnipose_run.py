@@ -59,7 +59,7 @@ def save_settings(
         tiffs_processed: int = 0,
         accuracy: Tuple = None
 ) -> None:
-    print(type(flow_settings), type(mask_settings), type(accuracy))
+    
     settings = {
         "Accuracy": str(accuracy),
         "Flow settings": flow_settings,
@@ -70,11 +70,13 @@ def save_settings(
     for key, sub_dict in list(settings.items())[1:]:
         settings[key] = {k: str(v) for k, v in sub_dict.items()}
 
+    cwd = Path(args.image).parent
     file_name = f"{tiffs_processed}"
     if accuracy is not None:
         file_name = f"{tiffs_processed}_{accuracy[0][0]}"
+    save_path = cwd / f"{file_name}_settings.json"
 
-    with open(f"{file_name}_settings.json", 'w') as file:
+    with open(save_path.as_posix(), 'w') as file:
         json.dump(settings, file, indent=4)
 
 
@@ -150,7 +152,7 @@ def main():
             )
 
             iter_list = [10, 15, 20, 25, 30, 25]
-            for niter, i in enumerate(iter_list):
+            for i, niter in enumerate(iter_list):
                 mask, mask_settings = run_mask_prediction(
                     flow,
                     bd=None,
