@@ -59,6 +59,7 @@ def save_settings(
         tiffs_processed: int = 0,
         accuracy: Tuple = None
 ) -> None:
+    print(type(flow_settings), type(mask_settings), type(accuracy))
     settings = {
         "Accuracy": accuracy,
         "Flow settings": flow_settings,
