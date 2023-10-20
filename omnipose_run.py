@@ -38,7 +38,7 @@ def save_tiff(
         dir_name: str,
         tiffs_processed: int = 0,
 
-) -> None:
+) -> Path:
     save_dir = tif_path.parent / f"{dir_name}_predicted_masks"
     os.makedirs(save_dir.as_posix(), exist_ok=True)
 
@@ -47,6 +47,7 @@ def save_tiff(
 
     print(f"Saving mask to {save_path.as_posix()}")
     tifffile.imwrite(save_path, tif_array)
+    return save_path
 
 
 def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
@@ -56,6 +57,7 @@ def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
 def save_settings(
         flow_settings: dict,
         mask_settings: dict,
+        save_dir: Path,
         tiffs_processed: int = 0,
         accuracy: Tuple = None
 ) -> None:
@@ -70,11 +72,10 @@ def save_settings(
     for key, sub_dict in list(settings.items())[1:]:
         settings[key] = {k: str(v) for k, v in sub_dict.items()}
 
-    cwd = Path(args.image).parent
     file_name = f"{tiffs_processed}"
     if accuracy is not None:
         file_name = f"{tiffs_processed}_{accuracy[0][0]}"
-    save_path = cwd / f"{file_name}_settings.json"
+    save_path = save_dir / f"{file_name}_settings.json"
 
     print(save_path.as_posix())
     with open(save_path.as_posix(), 'w') as file:
@@ -189,18 +190,18 @@ def main():
                     override=False)
 
                 # Save masks
-                save_tiff(
+                save_dir = save_tiff(
                     mask, image_path, dir_name=args.save_name, tiffs_processed=i
                 )
 
                 if args.mask:
                     accuracy = prediction_accuracy(mask_true, mask)
                     save_settings(
-                        flow_settings, mask_settings, tiffs_processed=i, accuracy=accuracy
+                        flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
                     )
                 else:
                     save_settings(
-                        flow_settings, mask_settings, tiffs_processed=i
+                        flow_settings, mask_settings, save_dir, tiffs_processed=i
                     )
 
             break
