@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import argparse
@@ -144,7 +145,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=False,
+                augment=True,
                 mask_threshold=1,
                 net_avg=False,
                 suppress=False,
@@ -153,8 +154,19 @@ def main():
                 flow_threshold=-5
             )
 
-            iter_list = [10, 15, 20, 25, 30, 25]
-            for i, niter in enumerate(iter_list):
+            niter_values = [20, 30, 40, 50]
+            mask_threshold_values = [0, 1]
+            diam_threshold_values = [32, 64, 128]
+            flow_threshold_values = [-5, 0, 5]
+            min_size_values = [4000, 8000, 16000]
+
+            param_combinations = itertools.product(
+                niter_values, mask_threshold_values, diam_threshold_values,
+                flow_threshold_values, min_size_values
+            )
+
+            for param_combination in param_combinations:
+                niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
                 mask, mask_settings = run_mask_prediction(
                     flow,
                     bd=None,
@@ -163,15 +175,15 @@ def main():
                     niter=niter,
                     rescale=1,
                     resize=None,
-                    mask_threshold=0,  # raise to recede boundaries
-                    diam_threshold=32,
-                    flow_threshold=-10,
+                    mask_threshold=mask_threshold,  # raise to recede boundaries
+                    diam_threshold=diam_threshold,
+                    flow_threshold=flow_threshold,
                     interp=True,
                     cluster=False,  # speed and less under-segmentation
                     boundary_seg=False,
                     affinity_seg=False,
                     do_3D=False,
-                    min_size=4000,
+                    min_size=min_size,
                     max_size=None,
                     hole_size=None,
                     omni=True,
