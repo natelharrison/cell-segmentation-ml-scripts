@@ -76,6 +76,7 @@ def save_settings(
         file_name = f"{tiffs_processed}_{accuracy[0][0]}"
     save_path = cwd / f"{file_name}_settings.json"
 
+    print(save_path.as_posix())
     with open(save_path.as_posix(), 'w') as file:
         json.dump(settings, file, indent=4)
 
