@@ -67,7 +67,7 @@ def save_settings(
     }
 
     # Convert all items into strings
-    for key, sub_dict in settings.items():
+    for key, sub_dict in list(settings.items())[1:]:
         settings[key] = {k: str(v) for k, v in sub_dict.items()}
 
     file_name = f"{tiffs_processed}"
