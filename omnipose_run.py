@@ -61,7 +61,7 @@ def save_settings(
 ) -> None:
     print(type(flow_settings), type(mask_settings), type(accuracy))
     settings = {
-        "Accuracy": accuracy,
+        "Accuracy": str(accuracy),
         "Flow settings": flow_settings,
         "Mask settings": mask_settings
     }
