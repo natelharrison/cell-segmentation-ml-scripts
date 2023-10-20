@@ -66,9 +66,14 @@ def save_settings(
         "Mask settings": mask_settings
     }
 
+    # Convert all items into strings
+    for key, sub_dict in settings.items():
+        settings[key] = {k: str(v) for k, v in sub_dict.items()}
+
     file_name = f"{tiffs_processed}"
     if accuracy is not None:
         file_name = f"{tiffs_processed}_{accuracy[0][0]}"
+
     with open(f"{file_name}_settings.json", 'w') as file:
         json.dump(settings, file, indent=4)
 
