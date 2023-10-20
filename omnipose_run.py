@@ -49,7 +49,9 @@ def save_tiff(
 
 
 def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
-    accuracy, _, _ = metrics.boundary_scores(masks_true, masks_pred, scales=1.0)
+    accuracy, _, _ = metrics.boundary_scores(
+        [masks_true], [masks_pred], scales=[1.0]
+    )
     return accuracy
 
 
