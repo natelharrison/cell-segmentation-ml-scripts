@@ -1,26 +1,75 @@
+import json
 import os
 import argparse
 from pathlib import Path
 from datetime import datetime
+from typing import Tuple, Any
 
 import omnipose
 import torch
 import tifffile
 import numpy as np
-from cellpose_omni import io
-from cellpose_omni import models
+from cellpose_omni import models, metrics
 from skimage import exposure
-from sklearn.neighbors import NearestNeighbors
-from kneed import KneeLocator
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--image_path', type=str, default='')
+parser.add_argument('--image', type=str, default='')
+parser.add_argument('--mask', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
+
+
+def load_tiff(path_str: str) -> tuple[np.ndarray, Path]:
+    tif_path = Path(path_str)
+    tif_array = tifffile.imread(tif_path.as_posix())
+
+    print(f"Read tif with shape: {tif_array.shape}")
+    return tif_array, tif_path
+
+
+def save_tiff(
+        tif_array: np.ndarray,
+        tif_path: Path,
+        dir_name: str,
+        tiffs_processed: int = 0,
+
+) -> None:
+    save_dir = tif_path.parent / f"{dir_name}_predicted_masks"
+    os.makedirs(save_dir.as_posix(), exist_ok=True)
+
+    save_name = f"{tiffs_processed}_{tif_path.name}_predicted_masks.tif"
+    save_path = save_dir / save_name
+
+    print(f"Saving mask to {save_path.as_posix()}")
+    tifffile.imwrite(save_path, tif_array)
+
+
+def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
+    accuracy, _, _ = metrics.boundary_scores(masks_true, masks_pred, scales=1.0)
+    return accuracy
+
+
+def save_settings(
+        flow_settings: dict,
+        mask_settings: dict,
+        tiffs_processed: int = 0,
+        accuracy: Tuple = None
+) -> None:
+    settings = {
+        "Accuracy": accuracy,
+        "Flow settings": flow_settings,
+        "Mask settings": mask_settings
+    }
+
+    file_name = f"{tiffs_processed}"
+    if accuracy != 0:
+        file_name = f"{tiffs_processed}_{accuracy}"
+    with open(f"{file_name}_settings.json", 'w') as file:
+        json.dump(settings, file, indent=4)
 
 
 def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
@@ -33,7 +82,7 @@ def run_flow_prediction(
         model: models.CellposeModel, image: np.ndarray, **kwargs
 ):
     masks, flows, _ = model.eval(image, **kwargs)
-    return masks, flows
+    return masks, flows, kwargs
 
 
 def run_mask_prediction(flow, **kwargs):
@@ -43,11 +92,8 @@ def run_mask_prediction(flow, **kwargs):
     # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
     ret = omnipose.core.compute_masks(dP, dist, **kwargs)
     mask = ret[0]
-    pixel_coords = ret[1]
 
-    kwargs_str = '_'.join([f"{key}={value}" for key, value in kwargs.items()])
-
-    return mask, kwargs_str, pixel_coords
+    return mask, kwargs
 
 
 def main():
@@ -58,10 +104,11 @@ def main():
     )
 
     # Load image info
-    image_path = Path(args.image_path)
-    image_name = image_path.name
-    image = io.imread(image_path.as_posix())
-    print(f"Read image with shape: {image.shape}")
+    image, image_path = load_tiff(args.image)
+
+    mask_true = None
+    if args.mask:
+        mask_true, _ = load_tiff(args.mask)
 
     # Normalize image
     img_min, img_max = np.percentile(image, (1, 99))
@@ -71,7 +118,7 @@ def main():
     while True:
         try:
             # Run predictions
-            mask, flow = run_flow_prediction(
+            mask, flow, flow_settings = run_flow_prediction(
                 model,
                 image,
                 batch_size=batch_size,
@@ -97,8 +144,8 @@ def main():
             )
 
             iter_list = [10, 15, 20, 25, 30, 25]
-            for niter in iter_list:
-                mask, kwargs, pixel_coords = run_mask_prediction(
+            for niter, i in enumerate(iter_list):
+                mask, mask_settings = run_mask_prediction(
                     flow,
                     bd=None,
                     p=None,
@@ -133,14 +180,19 @@ def main():
                     override=False)
 
                 # Save masks
-                save_dir = image_path.parent / f"{args.save_name}_predicted_masks"
-                os.makedirs(save_dir.as_posix(), exist_ok=True)
-                save_name = f"{niter}_{image_name}_predicted_masks.tif"
-                # save_name = f"{kwargs}.tif"
-                save_path = save_dir / save_name
+                save_tiff(
+                    mask, image_path, dir_name=args.save_name, tiffs_processed=i
+                )
 
-                print(f"Saving masks to {save_path.as_posix()}")
-                tifffile.imwrite(save_path, mask)
+                if args.mask:
+                    accuracy = prediction_accuracy(mask_true, mask)
+                    save_settings(
+                        flow_settings, mask_settings, tiffs_processed=i, accuracy=accuracy
+                    )
+                else:
+                    save_settings(
+                        flow_settings, mask_settings, tiffs_processed=i
+                    )
 
             break
 
