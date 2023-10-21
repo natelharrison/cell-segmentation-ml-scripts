@@ -47,7 +47,7 @@ def save_tiff(
     save_path = save_dir / save_name
 
     print(f"Saving mask to {save_path.as_posix()}")
-    tifffile.imwrite(save_path, tif_array)
+    # tifffile.imwrite(save_path, tif_array)
     return save_dir
 
 
