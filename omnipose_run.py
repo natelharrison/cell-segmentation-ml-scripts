@@ -165,7 +165,7 @@ def main():
                 flow_threshold_values, min_size_values
             )
 
-            for param_combination in param_combinations:
+            for i, param_combination in enumerate(param_combinations):
                 niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
                 mask, mask_settings = run_mask_prediction(
                     flow,
