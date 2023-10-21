@@ -48,7 +48,7 @@ def save_tiff(
 
     print(f"Saving mask to {save_path.as_posix()}")
     tifffile.imwrite(save_path, tif_array)
-    return save_path
+    return save_dir
 
 
 def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
