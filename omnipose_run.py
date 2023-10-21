@@ -216,6 +216,8 @@ def main():
                         flow_settings, mask_settings, save_dir, tiffs_processed=i
                     )
 
+                torch.cuda.empty_cache()
+
             break
 
         except RuntimeError as e:
