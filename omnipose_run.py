@@ -129,7 +129,7 @@ def main():
     while True:
         try:
             # Run predictions
-            mask, flow, flow_settings = run_flow_prediction(
+            _, flow, flow_settings = run_flow_prediction(
                 model,
                 image,
                 batch_size=batch_size,
@@ -154,70 +154,7 @@ def main():
                 flow_threshold=-5
             )
 
-            niter_values = [20, 30, 40, 50]
-            mask_threshold_values = [0, 1]
-            diam_threshold_values = [32, 64, 128]
-            flow_threshold_values = [-5, 0, 5]
-            min_size_values = [4000, 8000, 16000]
-
-            param_combinations = itertools.product(
-                niter_values, mask_threshold_values, diam_threshold_values,
-                flow_threshold_values, min_size_values
-            )
-
-            for i, param_combination in enumerate(param_combinations):
-                niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
-                mask, mask_settings = run_mask_prediction(
-                    flow,
-                    bd=None,
-                    p=None,
-                    inds=None,
-                    niter=niter,
-                    rescale=1,
-                    resize=None,
-                    mask_threshold=mask_threshold,  # raise to recede boundaries
-                    diam_threshold=diam_threshold,
-                    flow_threshold=flow_threshold,
-                    interp=True,
-                    cluster=False,  # speed and less under-segmentation
-                    boundary_seg=False,
-                    affinity_seg=False,
-                    do_3D=False,
-                    min_size=min_size,
-                    max_size=None,
-                    hole_size=None,
-                    omni=True,
-                    calc_trace=False,
-                    verbose=True,
-                    use_gpu=True,
-                    device=model.device,
-                    nclasses=2,
-                    dim=3,
-                    suppress=False,
-                    eps=None,
-                    hdbscan=False,
-                    min_samples=6,
-                    flow_factor=5,  # not needed with suppression off
-                    debug=False,
-                    override=False)
-
-                # Save masks
-                save_dir = save_tiff(
-                    mask, image_path, dir_name=args.save_name, tiffs_processed=i
-                )
-
-                if args.mask:
-                    accuracy = prediction_accuracy(mask_true, mask)
-                    save_settings(
-                        flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
-                    )
-                else:
-                    save_settings(
-                        flow_settings, mask_settings, save_dir, tiffs_processed=i
-                    )
-
-                torch.cuda.empty_cache()
-
+            torch.cuda.empty_cache()
             break
 
         except RuntimeError as e:
@@ -238,6 +175,71 @@ def main():
             )
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
+
+    niter_values = [20, 30, 40, 50]
+    mask_threshold_values = [0, 1]
+    diam_threshold_values = [32, 64, 128]
+    flow_threshold_values = [-5, 0, 5]
+    min_size_values = [4000, 8000, 16000]
+
+    param_combinations = itertools.product(
+        niter_values, mask_threshold_values, diam_threshold_values,
+        flow_threshold_values, min_size_values
+    )
+
+    for i, param_combination in enumerate(param_combinations):
+        niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
+        mask, mask_settings = run_mask_prediction(
+            flow,
+            bd=None,
+            p=None,
+            inds=None,
+            niter=niter,
+            rescale=1,
+            resize=None,
+            mask_threshold=mask_threshold,  # raise to recede boundaries
+            diam_threshold=diam_threshold,
+            flow_threshold=flow_threshold,
+            interp=True,
+            cluster=False,  # speed and less under-segmentation
+            boundary_seg=False,
+            affinity_seg=False,
+            do_3D=False,
+            min_size=min_size,
+            max_size=None,
+            hole_size=None,
+            omni=True,
+            calc_trace=False,
+            verbose=True,
+            use_gpu=True,
+            device=model.device,
+            nclasses=2,
+            dim=3,
+            suppress=False,
+            eps=None,
+            hdbscan=False,
+            min_samples=6,
+            flow_factor=5,  # not needed with suppression off
+            debug=False,
+            override=False)
+
+        # Save masks
+        save_dir = save_tiff(
+            mask, image_path, dir_name=args.save_name, tiffs_processed=i
+        )
+
+        if args.mask:
+            accuracy = prediction_accuracy(mask_true, mask)
+            save_settings(
+                flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
+            )
+        else:
+            save_settings(
+                flow_settings, mask_settings, save_dir, tiffs_processed=i
+            )
+
+        del mask
+        torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
