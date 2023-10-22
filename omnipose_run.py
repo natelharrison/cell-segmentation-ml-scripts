@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Tuple, Any
 
 import omnipose
+import ray
 import torch
 import tifffile
 import numpy as np
@@ -194,6 +195,7 @@ def main():
         )
 
         niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
+        print(niter, mask_threshold, diam_threshold, flow_threshold, min_size)
         mask, mask_settings = run_mask_prediction(
             flow,
             bd=None,
