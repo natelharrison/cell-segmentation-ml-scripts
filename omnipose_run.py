@@ -154,6 +154,7 @@ def main():
                 flow_threshold=-5
             )
 
+            del model
             torch.cuda.empty_cache()
             break
 
@@ -188,6 +189,10 @@ def main():
     )
 
     for i, param_combination in enumerate(param_combinations):
+        model = load_model(
+            model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True
+        )
+
         niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
         mask, mask_settings = run_mask_prediction(
             flow,
@@ -238,7 +243,7 @@ def main():
                 flow_settings, mask_settings, save_dir, tiffs_processed=i
             )
 
-        del mask
+        del mask, model
         torch.cuda.empty_cache()
 
 
