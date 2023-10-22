@@ -178,11 +178,17 @@ def main():
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
 
-    niter_values = [20, 30, 40, 50]
-    mask_threshold_values = [0, 1]
-    diam_threshold_values = [32, 64, 128]
-    flow_threshold_values = [-5, 0, 5]
-    min_size_values = [4000, 8000, 16000]
+    # niter_values = [20, 30, 40, 50]
+    # mask_threshold_values = [0, 1]
+    # diam_threshold_values = [32, 64, 128]
+    # flow_threshold_values = [-5, 0, 5]
+    # min_size_values = [4000, 8000, 16000]
+
+    niter_values = [20]
+    mask_threshold_values = [0]
+    diam_threshold_values = [32]
+    flow_threshold_values = [5]
+    min_size_values = [4000]
 
     param_combinations = itertools.product(
         niter_values, mask_threshold_values, diam_threshold_values,
