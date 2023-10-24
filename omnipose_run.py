@@ -150,6 +150,7 @@ def run_mask_prediction(flow, **kwargs):
 
 
 def main():
+    print("This si the most recent code...")
     # Load model
     model_path = Path(args.model)
     model = load_model(
