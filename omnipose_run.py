@@ -1,19 +1,17 @@
+import argparse
 import itertools
 import json
 import os
-import argparse
-from pathlib import Path
 from datetime import datetime
-from typing import Tuple, Any
+from pathlib import Path
+from typing import Tuple
 
 import omnipose
-import ray
 import torch
 import tifffile
 import numpy as np
 from cellpose_omni import models, metrics
 from skimage import exposure
-
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -93,6 +91,10 @@ def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
 def run_flow_prediction(
         model: models.CellposeModel, image: np.ndarray, **kwargs
 ):
+    # Normalize image
+    img_min, img_max = np.percentile(image, (1, 99))
+    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
+
     masks, flows, _ = model.eval(image, **kwargs)
     return masks, flows, kwargs
 
@@ -115,16 +117,11 @@ def main():
         model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True
     )
 
-    # Load image info
+    # Load image and ground truth mask if provided
     image, image_path = load_tiff(args.image)
-
     mask_true = None
     if args.mask:
         mask_true, _ = load_tiff(args.mask)
-
-    # Normalize image
-    img_min, img_max = np.percentile(image, (1, 99))
-    image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
     batch_size = 8
     while True:
@@ -154,9 +151,6 @@ def main():
                 transparency=True,
                 flow_threshold=-5
             )
-
-            del model
-            torch.cuda.empty_cache()
             break
 
         except RuntimeError as e:
@@ -172,23 +166,16 @@ def main():
 
             # Reduce batch size and rerun
             print(
-                f"Batch size of {batch_size} is too large. "
-                f"Halving the batch size..."
+                f"Batch size of {batch_size} is too large.  "
             )
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
 
-    # niter_values = [20, 30, 40, 50]
-    # mask_threshold_values = [0, 1]
-    # diam_threshold_values = [32, 64, 128]
-    # flow_threshold_values = [-1, 0, 1]
-    # min_size_values = [4000, 8000, 16000]
-
-    niter_values = [20]
-    mask_threshold_values = [0]
-    diam_threshold_values = [32]
-    flow_threshold_values = [0.5]
-    min_size_values = [4000]
+    niter_values = [10, 15, 20, 25, 30]
+    mask_threshold_values = [-1, 0, 1]
+    diam_threshold_values = [8, 16, 32]
+    flow_threshold_values = [-1, -0.5, 0]
+    min_size_values = [4000, 8000, 16000, 32000]
 
     param_combinations = itertools.product(
         niter_values, mask_threshold_values, diam_threshold_values,
@@ -201,7 +188,6 @@ def main():
         )
 
         niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
-        print(niter, mask_threshold, diam_threshold, flow_threshold, min_size)
         mask, mask_settings = run_mask_prediction(
             flow,
             bd=None,
@@ -241,19 +227,11 @@ def main():
             mask, image_path, dir_name=args.save_name, tiffs_processed=i
         )
 
-        if args.mask:
-            # accuracy = prediction_accuracy(mask_true, mask)
-            accuracy = 0.0
-            save_settings(
-                flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
-            )
-        else:
-            save_settings(
-                flow_settings, mask_settings, save_dir, tiffs_processed=i
-            )
-
-        del mask, model
-        torch.cuda.empty_cache()
+        if args.mask is not None:
+            accuracy = prediction_accuracy(mask_true, mask)
+        save_settings(
+            flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
+        )
 
 
 if __name__ == '__main__':
