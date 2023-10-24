@@ -121,33 +121,6 @@ def save_tiff(
     return save_dir
 
 
-def save_settings(
-        flow_settings: dict,
-        mask_settings: dict,
-        save_dir: Path,
-        tiffs_processed: int = 0,
-        accuracy: Tuple = None
-) -> None:
-    settings = {
-        "Accuracy": str(accuracy),
-        "Flow settings": flow_settings,
-        "Mask settings": mask_settings
-    }
-
-    # Convert all items into strings
-    for key, sub_dict in list(settings.items())[1:]:
-        settings[key] = {k: str(v) for k, v in sub_dict.items()}
-
-    file_name = f"{tiffs_processed}"
-    if accuracy is not None:
-        file_name = f"{tiffs_processed}_{accuracy[0][0]}"
-    save_path = save_dir / f"{file_name}_settings.json"
-
-    print(save_path.as_posix())
-    with open(save_path.as_posix(), 'w') as file:
-        json.dump(settings, file, indent=4)
-
-
 def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
     return models.CellposeModel(
         pretrained_model=model_path.as_posix(), **kwargs
