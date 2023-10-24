@@ -213,51 +213,51 @@ def main():
     # If ground truth provided, optimize parameters and print results
     if mask_true is not None:
         prediction_optimization(model, flow, mask_true)
-        return
 
-    # Run mask predictions
-    niter = 20
-    mask_threshold = 0
-    diam_threshold = 0
-    flow_threshold = 0
-    min_size = 4000
+    else:
+        # Run mask predictions
+        niter = 20
+        mask_threshold = 0
+        diam_threshold = 0
+        flow_threshold = 0
+        min_size = 4000
 
-    mask, mask_settings = run_mask_prediction(
-        flow,
-        bd=None,
-        p=None,
-        inds=None,
-        niter=niter,
-        rescale=1,
-        resize=None,
-        mask_threshold=mask_threshold,  # raise to recede boundaries
-        diam_threshold=diam_threshold,
-        flow_threshold=flow_threshold,
-        interp=True,
-        cluster=False,  # speed and less under-segmentation
-        boundary_seg=False,
-        affinity_seg=False,
-        do_3D=False,
-        min_size=min_size,
-        max_size=None,
-        hole_size=None,
-        omni=True,
-        calc_trace=False,
-        verbose=True,
-        use_gpu=True,
-        device=model.device,
-        nclasses=2,
-        dim=3,
-        suppress=False,
-        eps=None,
-        hdbscan=False,
-        min_samples=6,
-        flow_factor=5,  # not needed with suppression off
-        debug=False,
-        override=False)
+        mask, mask_settings = run_mask_prediction(
+            flow,
+            bd=None,
+            p=None,
+            inds=None,
+            niter=niter,
+            rescale=1,
+            resize=None,
+            mask_threshold=mask_threshold,  # raise to recede boundaries
+            diam_threshold=diam_threshold,
+            flow_threshold=flow_threshold,
+            interp=True,
+            cluster=False,  # speed and less under-segmentation
+            boundary_seg=False,
+            affinity_seg=False,
+            do_3D=False,
+            min_size=min_size,
+            max_size=None,
+            hole_size=None,
+            omni=True,
+            calc_trace=False,
+            verbose=True,
+            use_gpu=True,
+            device=model.device,
+            nclasses=2,
+            dim=3,
+            suppress=False,
+            eps=None,
+            hdbscan=False,
+            min_samples=6,
+            flow_factor=5,  # not needed with suppression off
+            debug=False,
+            override=False)
 
-    # Save masks
-    _ = save_tiff(mask, image_path, dir_name=args.save_name)
+        # Save masks
+        _ = save_tiff(mask, image_path, dir_name=args.save_name)
 
 
 if __name__ == '__main__':
