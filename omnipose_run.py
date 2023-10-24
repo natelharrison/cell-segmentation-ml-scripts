@@ -84,10 +84,12 @@ def prediction_optimization(
             override=False)
 
         score = prediction_accuracy(mask_true, mask)
+        print(**kwargs)
+        print(score)
         return score
 
     # Run Bayesian optimization
-    res_gp = gp_minimize(objective, search_space, n_calls=50, random_state=0)
+    res_gp = gp_minimize(objective, search_space, n_calls=5, random_state=0)
 
     # Results
     print("Best parameters: {}".format(res_gp.x))
