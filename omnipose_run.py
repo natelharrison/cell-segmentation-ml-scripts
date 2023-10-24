@@ -242,7 +242,8 @@ def main():
         )
 
         if args.mask:
-            accuracy = prediction_accuracy(mask_true, mask)
+            # accuracy = prediction_accuracy(mask_true, mask)
+            accuracy = 0.0
             save_settings(
                 flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
             )
