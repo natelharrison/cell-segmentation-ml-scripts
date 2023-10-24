@@ -40,11 +40,11 @@ def prediction_optimization(
         mask_true: np.ndarray,
 ) -> None:
     search_space = [
-        Integer(10, 30),
-        Real(-1, 1),
-        Integer(8, 32),
-        Real(-1, 0),
-        Integer(4000, 32000)
+        Integer(10, 30, name='niter'),
+        Real(-1, 1, name='mask_threshold'),
+        Integer(8, 32, name='diam_threshold'),
+        Real(-1, 0, name='flow_threshold'),
+        Integer(4000, 32000, name='min_size')
     ]
 
     @use_named_args(search_space)
