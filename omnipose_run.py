@@ -1,5 +1,4 @@
 import argparse
-import itertools
 import json
 import os
 from datetime import datetime
@@ -13,6 +12,10 @@ import numpy as np
 from cellpose_omni import models, metrics
 from skimage import exposure
 
+from skopt import gp_minimize
+from skopt.utils import use_named_args
+from skopt.space import Real, Integer
+
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -22,6 +25,73 @@ parser.add_argument('--mask', type=str, default='')
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
+
+
+def prediction_accuracy(masks_true: np.ndarray, masks_predicted: np.ndarray):
+    ap, _, _, _ = metrics.average_precision(
+        [masks_true], [masks_predicted]
+    )
+    return np.mean(ap)
+
+
+def prediction_optimization(
+        model: models.CellposeModel,
+        flow: np.ndarray,
+        mask_true: np.ndarray,
+) -> None:
+    search_space = [
+        Integer(10, 30),
+        Real(-1, 1),
+        Integer(8, 32),
+        Real(-1, 0),
+        Integer(4000, 32000)
+    ]
+
+    @use_named_args(search_space)
+    def objective(**kwargs):
+        mask, mask_settings = run_mask_prediction(
+            flow,
+            bd=None,
+            p=None,
+            inds=None,
+            niter=kwargs['niter'],
+            rescale=1,
+            resize=None,
+            mask_threshold=kwargs['mask_threshold'],  # raise to recede boundaries
+            diam_threshold=kwargs['diam_threshold'],
+            flow_threshold=kwargs['flow_threshold'],
+            interp=True,
+            cluster=False,  # speed and less under-segmentation
+            boundary_seg=False,
+            affinity_seg=False,
+            do_3D=False,
+            min_size=kwargs['min_size'],
+            max_size=None,
+            hole_size=None,
+            omni=True,
+            calc_trace=False,
+            verbose=True,
+            use_gpu=True,
+            device=model.device,
+            nclasses=2,
+            dim=3,
+            suppress=False,
+            eps=None,
+            hdbscan=False,
+            min_samples=6,
+            flow_factor=5,  # not needed with suppression off
+            debug=False,
+            override=False)
+
+        score = prediction_accuracy(mask_true, mask)
+        return score
+
+    # Run Bayesian optimization
+    res_gp = gp_minimize(objective, search_space, n_calls=50, random_state=0)
+
+    # Results
+    print("Best parameters: {}".format(res_gp.x))
+    print("Best score: {}".format(res_gp.fun))
 
 
 def load_tiff(path_str: str) -> tuple[np.ndarray, Path]:
@@ -36,22 +106,17 @@ def save_tiff(
         tif_array: np.ndarray,
         tif_path: Path,
         dir_name: str,
-        tiffs_processed: int = 0,
 
 ) -> Path:
     save_dir = tif_path.parent / f"{dir_name}_predicted_masks"
     os.makedirs(save_dir.as_posix(), exist_ok=True)
 
-    save_name = f"{tiffs_processed}_{tif_path.name}_predicted_masks.tif"
+    save_name = f"{tif_path.name}_predicted_masks.tif"
     save_path = save_dir / save_name
 
     print(f"Saving mask to {save_path.as_posix()}")
-    # tifffile.imwrite(save_path, tif_array)
+    tifffile.imwrite(save_path, tif_array)
     return save_dir
-
-
-def prediction_accuracy(masks_true: np.ndarray, masks_pred: np.ndarray):
-    return metrics.average_precision([masks_true], [masks_pred])
 
 
 def save_settings(
@@ -61,7 +126,6 @@ def save_settings(
         tiffs_processed: int = 0,
         accuracy: Tuple = None
 ) -> None:
-    
     settings = {
         "Accuracy": str(accuracy),
         "Flow settings": flow_settings,
@@ -120,13 +184,13 @@ def main():
     # Load image and ground truth mask if provided
     image, image_path = load_tiff(args.image)
     mask_true = None
-    if args.mask:
+    if args.mask is not None:
         mask_true, _ = load_tiff(args.mask)
 
+    # Run  flow predictions
     batch_size = 8
     while True:
         try:
-            # Run predictions
             _, flow, flow_settings = run_flow_prediction(
                 model,
                 image,
@@ -171,67 +235,54 @@ def main():
             batch_size = batch_size // 2
             torch.cuda.empty_cache()
 
-    niter_values = [10, 15, 20, 25, 30]
-    mask_threshold_values = [-1, 0, 1]
-    diam_threshold_values = [8, 16, 32]
-    flow_threshold_values = [-1, -0.5, 0]
-    min_size_values = [4000, 8000, 16000, 32000]
+    # If ground truth provided, optimize parameters and print results
+    if mask_true is not None:
+        prediction_optimization(model, flow, mask_true)
+        return
 
-    param_combinations = itertools.product(
-        niter_values, mask_threshold_values, diam_threshold_values,
-        flow_threshold_values, min_size_values
-    )
+    # Run mask predictions
+    niter = 20
+    mask_threshold = 0
+    diam_threshold = 0
+    flow_threshold = 0
+    min_size = 4000
 
-    for i, param_combination in enumerate(param_combinations):
-        model = load_model(
-            model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True
-        )
+    mask, mask_settings = run_mask_prediction(
+        flow,
+        bd=None,
+        p=None,
+        inds=None,
+        niter=niter,
+        rescale=1,
+        resize=None,
+        mask_threshold=mask_threshold,  # raise to recede boundaries
+        diam_threshold=diam_threshold,
+        flow_threshold=flow_threshold,
+        interp=True,
+        cluster=False,  # speed and less under-segmentation
+        boundary_seg=False,
+        affinity_seg=False,
+        do_3D=False,
+        min_size=min_size,
+        max_size=None,
+        hole_size=None,
+        omni=True,
+        calc_trace=False,
+        verbose=True,
+        use_gpu=True,
+        device=model.device,
+        nclasses=2,
+        dim=3,
+        suppress=False,
+        eps=None,
+        hdbscan=False,
+        min_samples=6,
+        flow_factor=5,  # not needed with suppression off
+        debug=False,
+        override=False)
 
-        niter, mask_threshold, diam_threshold, flow_threshold, min_size = param_combination
-        mask, mask_settings = run_mask_prediction(
-            flow,
-            bd=None,
-            p=None,
-            inds=None,
-            niter=niter,
-            rescale=1,
-            resize=None,
-            mask_threshold=mask_threshold,  # raise to recede boundaries
-            diam_threshold=diam_threshold,
-            flow_threshold=flow_threshold,
-            interp=True,
-            cluster=False,  # speed and less under-segmentation
-            boundary_seg=False,
-            affinity_seg=False,
-            do_3D=False,
-            min_size=min_size,
-            max_size=None,
-            hole_size=None,
-            omni=True,
-            calc_trace=False,
-            verbose=True,
-            use_gpu=True,
-            device=model.device,
-            nclasses=2,
-            dim=3,
-            suppress=False,
-            eps=None,
-            hdbscan=False,
-            min_samples=6,
-            flow_factor=5,  # not needed with suppression off
-            debug=False,
-            override=False)
-
-        # Save masks
-        save_dir = save_tiff(
-            mask, image_path, dir_name=args.save_name, tiffs_processed=i
-        )
-
-        if args.mask is not None:
-            accuracy = prediction_accuracy(mask_true, mask)
-        save_settings(
-            flow_settings, mask_settings, save_dir, tiffs_processed=i, accuracy=accuracy
-        )
+    # Save masks
+    _ = save_tiff(mask, image_path, dir_name=args.save_name)
 
 
 if __name__ == '__main__':
