@@ -31,8 +31,8 @@ def prediction_accuracy(masks_true: np.ndarray, masks_predicted: np.ndarray):
     ap, _, _, _ = metrics.average_precision(
         [masks_true], [masks_predicted]
     )
-    print(ap)
-    return 1 - ap[0]  # least strict threshold
+    print(ap[0])
+    return 1 - ap[0][0]  # least strict threshold
 
 
 def prediction_optimization(
