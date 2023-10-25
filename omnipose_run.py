@@ -53,7 +53,6 @@ def prediction_optimization(
             flow,
             bd=None,
             p=None,
-            inds=None,
             niter=kwargs['niter'],
             rescale=1,
             resize=None,
@@ -78,7 +77,6 @@ def prediction_optimization(
             suppress=False,
             eps=None,
             hdbscan=False,
-            min_samples=6,
             flow_factor=5,  # not needed with suppression off
             debug=False,
             override=False)
@@ -227,7 +225,6 @@ def main():
             flow,
             bd=None,
             p=None,
-            inds=None,
             niter=niter,
             rescale=1,
             resize=None,
@@ -252,7 +249,6 @@ def main():
             suppress=False,
             eps=None,
             hdbscan=False,
-            min_samples=6,
             flow_factor=5,  # not needed with suppression off
             debug=False,
             override=False)
