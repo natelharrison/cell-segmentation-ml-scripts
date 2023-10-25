@@ -31,7 +31,8 @@ def prediction_accuracy(masks_true: np.ndarray, masks_predicted: np.ndarray):
     ap, _, _, _ = metrics.average_precision(
         [masks_true], [masks_predicted]
     )
-    return np.mean(ap)
+    print(ap)
+    return 1 - ap[0]  # least strict threshold
 
 
 def prediction_optimization(
@@ -40,11 +41,11 @@ def prediction_optimization(
         mask_true: np.ndarray,
 ) -> None:
     search_space = [
-        Integer(10, 30, name='niter'),
-        Real(-1, 1, name='mask_threshold'),
-        Integer(8, 32, name='diam_threshold'),
-        Real(-1, 0, name='flow_threshold'),
-        Integer(4000, 32000, name='min_size')
+        Integer(8, 64, name='niter'),
+        Real(-2, 2, name='mask_threshold'),
+        Integer(0, 32, name='diam_threshold'),
+        Real(-4, 0, name='flow_threshold'),
+        Integer(0, 32000, name='min_size')
     ]
 
     @use_named_args(search_space)
@@ -87,7 +88,7 @@ def prediction_optimization(
         return score
 
     # Run Bayesian optimization
-    res_gp = gp_minimize(objective, search_space, n_calls=10, random_state=0)
+    res_gp = gp_minimize(objective, search_space, n_calls=64, random_state=7)
 
     # Results
     print("Best parameters: {}".format(res_gp.x))
