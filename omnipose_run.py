@@ -215,11 +215,11 @@ def main():
 
     else:
         # Run mask predictions
-        niter = 20
-        mask_threshold = 0
-        diam_threshold = 0
-        flow_threshold = 0
-        min_size = 4000
+        niter = 30
+        mask_threshold = 2.0
+        diam_threshold = 32
+        flow_threshold = 0.0
+        min_size = 11000
 
         mask, mask_settings = run_mask_prediction(
             flow,
