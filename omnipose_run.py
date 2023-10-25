@@ -88,7 +88,7 @@ def prediction_optimization(
         return score
 
     # Run Bayesian optimization
-    res_gp = gp_minimize(objective, search_space, n_calls=64, random_state=7)
+    res_gp = gp_minimize(objective, search_space, n_calls=128, random_state=7)
 
     # Results
     print("Best parameters: {}".format(res_gp.x))
