@@ -82,7 +82,7 @@ def prediction_optimization(
             override=False)
 
         score = prediction_accuracy(mask_true, mask)
-        print(**kwargs)
+        print(f"Testing with values {kwargs}")
         print(score)
         return score
 
@@ -148,7 +148,6 @@ def run_mask_prediction(flow, **kwargs):
 
 
 def main():
-    print("This si the most recent code...")
     # Load model
     model_path = Path(args.model)
     model = load_model(
