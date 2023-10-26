@@ -46,7 +46,6 @@ def prediction_optimization(
         Integer(0, 32, name='diam_threshold'),
         Real(-4, 0, name='flow_threshold'),
         Integer(0, 32000, name='min_size'),
-        Categorical(True, False, name='omni')
     ]
 
     @use_named_args(search_space)
@@ -69,7 +68,7 @@ def prediction_optimization(
             min_size=kwargs['min_size'],
             max_size=None,
             hole_size=None,
-            omni=kwargs['omni'],
+            omni=True,
             calc_trace=False,
             verbose=True,
             use_gpu=True,
