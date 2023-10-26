@@ -42,7 +42,7 @@ def prediction_optimization(
 ) -> None:
     search_space = [
         Integer(8, 128, name='niter'),
-        Real(-2, 2, name='mask_threshold'),
+        Real(-5, 5, name='mask_threshold'),
         Integer(0, 32, name='diam_threshold'),
         Real(-4, 0, name='flow_threshold'),
         Integer(0, 32000, name='min_size')
