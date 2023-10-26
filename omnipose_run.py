@@ -14,7 +14,7 @@ from skimage import exposure
 
 from skopt import gp_minimize
 from skopt.utils import use_named_args
-from skopt.space import Real, Integer
+from skopt.space import Real, Integer, Categorical
 
 now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -45,7 +45,8 @@ def prediction_optimization(
         Real(-5, 5, name='mask_threshold'),
         Integer(0, 32, name='diam_threshold'),
         Real(-4, 0, name='flow_threshold'),
-        Integer(0, 32000, name='min_size')
+        Integer(0, 32000, name='min_size'),
+        Categorical(True, False, name='omni')
     ]
 
     @use_named_args(search_space)
@@ -55,7 +56,7 @@ def prediction_optimization(
             bd=None,
             p=None,
             niter=kwargs['niter'],
-            rescale=1,
+            rescale=1.0,
             resize=None,
             mask_threshold=kwargs['mask_threshold'],  # raise to recede boundaries
             diam_threshold=kwargs['diam_threshold'],
@@ -68,7 +69,7 @@ def prediction_optimization(
             min_size=kwargs['min_size'],
             max_size=None,
             hole_size=None,
-            omni=True,
+            omni=kwargs['omni'],
             calc_trace=False,
             verbose=True,
             use_gpu=True,
@@ -177,10 +178,10 @@ def main():
                 tile=True,
                 bsize=224,
                 channels=None,
-                rescale=None,
+                rescale=1.0,
                 flow_factor=10,
                 normalize=True,
-                diameter=None,
+                diameter=0,
                 augment=True,
                 mask_threshold=1,
                 net_avg=False,
@@ -226,7 +227,7 @@ def main():
             bd=None,
             p=None,
             niter=niter,
-            rescale=1,
+            rescale=1.0,
             resize=None,
             mask_threshold=mask_threshold,  # raise to recede boundaries
             diam_threshold=diam_threshold,
