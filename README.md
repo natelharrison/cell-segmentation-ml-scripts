@@ -1,5 +1,4 @@
-# Project Title
-Cell Segmentation ML Scripts
+# Cell Segmentation ML Scripts
 
 ## Description
 This repo is still under work and as such is rapidly changing and a little messy for the sake of development time. The main goal is to currently get the segmentations masks we need and then I will spend time cleaning up and optimizing scripts for speed and reliability. If you would like to use any of these scipts and they are not working submit an issue and I can help as needed.
