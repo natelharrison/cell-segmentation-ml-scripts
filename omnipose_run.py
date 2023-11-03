@@ -27,12 +27,18 @@ parser.add_argument('--save_name', type=str, default=date_string)
 args = parser.parse_args()
 
 
-def prediction_accuracy(masks_true: np.ndarray, masks_predicted: np.ndarray):
-    ap, _, _, _ = metrics.average_precision(
-        [masks_true], [masks_predicted]
-    )
-    print(ap[0])
-    return 1 - ap[0][0]  # least strict threshold
+def prediction_accuracy(
+        masks_true: np.ndarray, masks_predicted: np.ndarray, flows_dP: np.ndarray
+):
+    # ap, _, _, _ = metrics.average_precision(
+    #     [masks_true], [masks_predicted]
+    # )
+    # print(ap[0])
+    # return 1 - ap[0][0]  # least strict threshold
+
+    metrics.flow_error(masks_predicted, flows_dP, use_gpu=False, device=None)
+    flow_errors, _ = metrics.flow_error(masks_true)
+    return np.mean(flow_errors)
 
 
 def prediction_optimization(
@@ -82,7 +88,7 @@ def prediction_optimization(
             debug=False,
             override=False)
 
-        score = prediction_accuracy(mask_true, mask)
+        score = prediction_accuracy(mask_true, mask, flow[1])
         print(f"Testing with values {kwargs}")
         print(score)
         return score
