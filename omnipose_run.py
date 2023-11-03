@@ -28,7 +28,9 @@ args = parser.parse_args()
 
 
 def prediction_accuracy(
-        masks_true: np.ndarray, masks_predicted: np.ndarray, flows_dP: np.ndarray
+        masks_predicted: np.ndarray = None,
+        masks_true: np.ndarray = None,
+        flows_dP: np.ndarray = None
 ):
     # ap, _, _, _ = metrics.average_precision(
     #     [masks_true], [masks_predicted]
@@ -88,7 +90,9 @@ def prediction_optimization(
             debug=False,
             override=False)
 
-        score = prediction_accuracy(mask_true, mask, flow[1])
+        score = prediction_accuracy(
+            masks_predicted=mask,  masks_true=mask_true, flows_dP=flow[1]
+        )
         print(f"Testing with values {kwargs}")
         print(score)
         return score
