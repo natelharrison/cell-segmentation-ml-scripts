@@ -29,7 +29,7 @@ Scripts useful for training Cellpose and Omnipose models and running predictions
   python /absolute/path/to/preprocessing.py --dir /path/to/directory --test_size 0.2 --crop_size 1 64 64 --strides 1 32 32 --save_name processed --remove_label 0
 
 #### `postprocessing.py`
-* **Description**: Applies postprocessing to image data, including label filtering and tile stitching.
+* **Description**: Does nothing currently.
 * **Arguments**:
   * `--dir` (str, absolute path): The directory containing input TIFF images.
 * **Usage**:
