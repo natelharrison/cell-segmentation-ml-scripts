@@ -40,7 +40,7 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, flows, use_gpu=True, device=model.device)
+    metrics.flow_error(masks_predicted, flows[1], use_gpu=True, device=model.device)
     flow_errors, _ = metrics.flow_error(masks_true, flows)
     return np.mean(flow_errors)
 
@@ -104,6 +104,9 @@ def prediction_optimization(
         return score
 
     # Run Bayesian optimization
+    print(flow)
+    print('Flow[1]')
+    print(flow[1])
     res_gp = gp_minimize(objective, search_space, n_calls=128, random_state=7)
 
     # Results
@@ -211,7 +214,7 @@ def main():
                 flow_factor=10,
                 normalize=True,
                 diameter=None,
-                augment=True,
+                augment=False,
                 mask_threshold=1,
                 net_avg=False,
                 suppress=False,
