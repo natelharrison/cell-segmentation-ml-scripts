@@ -180,10 +180,10 @@ def main():
     batch_size = 8
     while True:
         try:
-            _, flow, flow_settings = run_flow_prediction(
+            _, flows, _ = run_flow_prediction(
                 model,
                 image,
-                batch_size=batch_size,
+                batch_size=4,
                 compute_masks=True,
                 omni=True,
                 niter=1,
@@ -192,10 +192,10 @@ def main():
                 tile=True,
                 bsize=224,
                 channels=None,
-                rescale=1.0,
+                rescale=None,
                 flow_factor=10,
                 normalize=True,
-                diameter=0,
+                diameter=None,
                 augment=True,
                 mask_threshold=1,
                 net_avg=False,
