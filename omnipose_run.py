@@ -41,7 +41,7 @@ def prediction_accuracy(
     # return 1 - ap[0][0]  # least strict threshold
 
     metrics.flow_error(masks_predicted, flows_dP, use_gpu=True, device=model.device)
-    flow_errors, _ = metrics.flow_error(masks_true)
+    flow_errors, _ = metrics.flow_error(masks_true, flows_dP)
     return np.mean(flow_errors)
 
 
