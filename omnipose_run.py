@@ -30,7 +30,8 @@ args = parser.parse_args()
 def prediction_accuracy(
         masks_predicted: np.ndarray = None,
         masks_true: np.ndarray = None,
-        flows_dP: np.ndarray = None
+        flows_dP: np.ndarray = None,
+        model: models.CellposeModel = None
 ):
     # ap, _, _, _ = metrics.average_precision(
     #     [masks_true], [masks_predicted]
@@ -38,7 +39,7 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, flows_dP, use_gpu=True, device=None)
+    metrics.flow_error(masks_predicted, flows_dP, use_gpu=True, device=model.device)
     flow_errors, _ = metrics.flow_error(masks_true)
     return np.mean(flow_errors)
 
@@ -92,7 +93,10 @@ def prediction_optimization(
 
         torch.cuda.empty_cache()
         score = prediction_accuracy(
-            masks_predicted=mask,  masks_true=mask_true, flows_dP=flow[1]
+            masks_predicted=mask,
+            masks_true=mask_true,
+            flows_dP=flow[1],
+            model=model
         )
         print(f"Testing with values {kwargs}")
         print(score)
