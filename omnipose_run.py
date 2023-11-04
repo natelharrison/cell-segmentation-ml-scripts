@@ -31,7 +31,7 @@ args = parser.parse_args()
 def prediction_accuracy(
         masks_predicted: np.ndarray = None,
         masks_true: np.ndarray = None,
-        flows_dP: np.ndarray = None,
+        flows: np.ndarray = None,
         model: models.CellposeModel = None
 ):
     # ap, _, _, _ = metrics.average_precision(
@@ -40,8 +40,8 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, flows_dP, use_gpu=True, device=model.device)
-    flow_errors, _ = metrics.flow_error(masks_true, flows_dP)
+    metrics.flow_error(masks_predicted, flows, use_gpu=True, device=model.device)
+    flow_errors, _ = metrics.flow_error(masks_true, flows)
     return np.mean(flow_errors)
 
 
@@ -97,7 +97,7 @@ def prediction_optimization(
         score = prediction_accuracy(
             masks_predicted=mask,
             masks_true=mask_true,
-            flows_dP=flow[1],
+            flows=flow,
             model=model
         )
         print(score)
@@ -184,6 +184,7 @@ def main():
     ref_image = None
     if args.reference_image is not None:
         ref_image, _ = load_tiff(args.reference_image)
+    print(ref_image)
 
     mask_true = None
     if args.mask is not None:
