@@ -40,7 +40,7 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, dP, use_gpu=False, device=model.device)
+    metrics.flow_error(masks_predicted, dP, use_gpu=False, device=None)
     flow_errors, _ = metrics.flow_error(masks_predicted, dP)
     return np.mean(flow_errors)
 
@@ -97,6 +97,8 @@ def prediction_optimization(
         dP = flow[1]
         print('dP is soooooooo cool!')
         print(dP)
+        print("mask is soooooooo cool!")
+        print(mask)
         score = prediction_accuracy(
             masks_predicted=mask,
             dP=dP,
