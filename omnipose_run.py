@@ -146,7 +146,7 @@ def run_flow_prediction(
         model: models.CellposeModel,
         image: np.ndarray,
         ref_image: np.ndarray=None,
-        **kwargs
+        **kwargs,
 ):
     # If reference image (training data) is provided match histograms
     if ref_image is not None:
@@ -196,7 +196,7 @@ def main():
             _, flow, _ = run_flow_prediction(
                 model,
                 image,
-                ref_image=ref_image
+                ref_image=ref_image,
                 batch_size=4,
                 compute_masks=True,
                 omni=True,
