@@ -59,6 +59,7 @@ def prediction_optimization(
 
     @use_named_args(search_space)
     def objective(**kwargs):
+        print(f"Testing with values {kwargs}")
         mask, mask_settings = run_mask_prediction(
             flow,
             bd=None,
@@ -98,7 +99,6 @@ def prediction_optimization(
             flows_dP=flow[1],
             model=model
         )
-        print(f"Testing with values {kwargs}")
         print(score)
         return score
 
