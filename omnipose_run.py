@@ -50,7 +50,7 @@ def prediction_optimization(
         mask_true: np.ndarray,
 ) -> None:
     search_space = [
-        Integer(8, 128, name='niter'),
+        Integer(64, 128, name='niter'),
         Real(-5, 5, name='mask_threshold'),
         Integer(0, 32, name='diam_threshold'),
         Real(-4, 0, name='flow_threshold'),
