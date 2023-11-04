@@ -21,6 +21,7 @@ date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image', type=str, default=None)
+parser.add_argument('--reference_image', type=str, default=None)
 parser.add_argument('--mask', type=str, default=None)
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
@@ -142,8 +143,15 @@ def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
 
 
 def run_flow_prediction(
-        model: models.CellposeModel, image: np.ndarray, **kwargs
+        model: models.CellposeModel,
+        image: np.ndarray,
+        ref_image: np.ndarray=None,
+        **kwargs
 ):
+    # If reference image (training data) is provided match histograms
+    if ref_image is not None:
+        image = exposure.match_histograms(image, ref_image)
+
     # Normalize image
     img_min, img_max = np.percentile(image, (1, 99))
     image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
@@ -172,6 +180,11 @@ def main():
 
     # Load image and ground truth mask if provided
     image, image_path = load_tiff(args.image)
+
+    ref_image = None
+    if args.reference_image is not None:
+        ref_image = load_tiff(args.reference_image)
+
     mask_true = None
     if args.mask is not None:
         mask_true, _ = load_tiff(args.mask)
@@ -183,6 +196,7 @@ def main():
             _, flow, _ = run_flow_prediction(
                 model,
                 image,
+                ref_image=ref_image
                 batch_size=4,
                 compute_masks=True,
                 omni=True,
