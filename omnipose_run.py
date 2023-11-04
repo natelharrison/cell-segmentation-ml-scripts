@@ -180,7 +180,7 @@ def main():
     batch_size = 8
     while True:
         try:
-            _, flows, _ = run_flow_prediction(
+            _, flow, _ = run_flow_prediction(
                 model,
                 image,
                 batch_size=4,
