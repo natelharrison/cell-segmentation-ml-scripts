@@ -183,7 +183,7 @@ def main():
 
     ref_image = None
     if args.reference_image is not None:
-        ref_image = load_tiff(args.reference_image)
+        ref_image, _ = load_tiff(args.reference_image)
 
     mask_true = None
     if args.mask is not None:
