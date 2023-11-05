@@ -96,11 +96,12 @@ def prediction_optimization(
         torch.cuda.empty_cache()
         print(flow[1])
         dP = flow[1]
-        score = prediction_accuracy(
-            masks_predicted=mask,
-            dP=dP,
-            model=model
-        )
+        score = .5
+        # score = prediction_accuracy(
+        #     masks_predicted=mask,
+        #     dP=dP,
+        #     model=model
+        # )
         print(score)
         return score
 
