@@ -93,7 +93,6 @@ def prediction_optimization(
             debug=False,
             override=False)
 
-        torch.cuda.empty_cache()
         print(flow[1])
         dP = flow[1]
         score = .5
