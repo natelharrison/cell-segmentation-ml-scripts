@@ -94,11 +94,8 @@ def prediction_optimization(
             override=False)
 
         torch.cuda.empty_cache()
+        print(flow[1])
         dP = flow[1]
-        print('dP is soooooooo cool!')
-        print(dP)
-        print("mask is soooooooo cool!")
-        print(mask)
         score = prediction_accuracy(
             masks_predicted=mask,
             dP=dP,
