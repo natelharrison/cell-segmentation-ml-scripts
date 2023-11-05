@@ -40,7 +40,7 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, dP, use_gpu=False, device=None)
+    metrics.flow_error(masks_predicted, dP, use_gpu=True, device=model.device)
     flow_errors, _ = metrics.flow_error(masks_predicted, dP)
     return np.mean(flow_errors)
 
@@ -61,6 +61,7 @@ def prediction_optimization(
     @use_named_args(search_space)
     def objective(**kwargs):
         print(f"Testing with values {kwargs}")
+        torch.cuda.empty_cache()
         mask, mask_settings = run_mask_prediction(
             flow,
             bd=None,
@@ -93,14 +94,12 @@ def prediction_optimization(
             debug=False,
             override=False)
 
-        print(flow[1])
         dP = flow[1]
-        score = .5
-        # score = prediction_accuracy(
-        #     masks_predicted=mask,
-        #     dP=dP,
-        #     model=model
-        # )
+        score = prediction_accuracy(
+            masks_predicted=mask,
+            dP=dP,
+            model=model
+        )
         print(score)
         return score
 
