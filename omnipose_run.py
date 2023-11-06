@@ -45,7 +45,7 @@ def prediction_accuracy(
         flow_errors, _ = metrics.flow_error(masks_predicted, dP)
         return np.mean(flow_errors)
     except TypeError as e:
-        if "cannot unpack non-iterable NoneType object" not in str(e):
+        if "NoneType" not in str(e):
             raise e
         print("Ran into Type Error: cannot unpack non-iterable NoneType object")
         return 999
