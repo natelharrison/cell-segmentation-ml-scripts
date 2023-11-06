@@ -40,9 +40,16 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, dP, use_gpu=True, device=model.device)
-    flow_errors, _ = metrics.flow_error(masks_predicted, dP)
-    return np.mean(flow_errors)
+    metrics.flow_error(masks_predicted, dP, use_gpu=False, device=None)
+    try:
+        flow_errors, _ = metrics.flow_error(masks_predicted, dP)
+        return np.mean(flow_errors)
+    except TypeError as e:
+        if "cannot unpack non-iterable NoneType object" not in str(e):
+            raise e
+        print("Ran into Type Error: cannot unpack non-iterable NoneType object")
+        return 1
+
 
 
 def prediction_optimization(
