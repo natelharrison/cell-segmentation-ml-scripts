@@ -16,7 +16,7 @@ Scripts useful for training Cellpose and Omnipose models and running predictions
 ## Executing program
 
 #### `preprocessing.py`
-* **Description**: Preprocesses image data for machine learning tasks, supporting cropping and dataset splitting.
+* **Description**: Preprocesses 3D TIF image data for machine learning tasks, supporting cropping and dataset splitting.
 * **Arguments**:
   * `--dir` (str, absolute path): The directory containing input TIFF images.
   * `--test_size` (float): Proportion of the dataset to use as the test set.
@@ -48,7 +48,7 @@ Scripts useful for training Cellpose and Omnipose models and running predictions
   python /absolute/path/to/omnipose_run.py --image /path/to/image --mask /path/to/mask --model /path/to/model --save_name output
 
 #### `cellpose_run.py`
-* **Description**: Applies the CellPose model for image segmentation.
+* **Description**: Applies the CellPose model for image segmentation. 
 * **Arguments**:
   * `--dir` (str, absolute path): The directory for input/output.
   * `--image_path` (str, absolute path): Path to the input image.
@@ -64,7 +64,7 @@ Scripts useful for training Cellpose and Omnipose models and running predictions
   python /absolute/path/to/cellpose_run.py --dir /path/to/directory --image_path /path/to/image --model /path/to/model --pretrained /path/to/pretrained --chunks 500 500 --kwargs '{"diameter": 30, "do_3D": true}' --save_name output --batch_num 1 --split method
 
 #### `clean_training_data.py`
-* **Description**: Cleans training data, with options for background removal and visualization.
+* **Description**: Cleans training data using Geodesic Active Contour to refine cell mask labels, with options for background removal and visualization. Particularly useful for labels that have been upscaled and to possibly address over segmentation or small labels to some extent.
 * **Arguments**:
   * `--image_path` (str, absolute path): Path to the input image.
   * `--mask_path` (str, absolute path): Path to the input mask.
@@ -77,7 +77,7 @@ Scripts useful for training Cellpose and Omnipose models and running predictions
   python /absolute/path/to/clean_training_data.py --image_path /path/to/image --mask_path /path/to/mask --num_chunks 4 --object_store_memory 5000000000 --background 1 --visualize
 
 #### `batch_script_generator.py`
-* **Description**: Generates and executes batch scripts for image processing tasks.
+* **Description**: Generates and executes batch scripts for testing multiple instances of Cellpose predictions using different settings. Will probably update Cellpose script to use similar optimization techniques used in omnipose_run.py to test multiple settings.
 * **Arguments**:
   * `--image_path` (str, absolute path): Path to the input image.
   * `--save_name` (str): Name for the output.
