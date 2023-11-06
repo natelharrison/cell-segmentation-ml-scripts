@@ -40,7 +40,7 @@ def prediction_accuracy(
     # print(ap[0])
     # return 1 - ap[0][0]  # least strict threshold
 
-    metrics.flow_error(masks_predicted, dP, use_gpu=False, device=None)
+    metrics.flow_error(masks_predicted, dP, use_gpu=True, device=None
     try:
         flow_errors, _ = metrics.flow_error(masks_predicted, dP)
         return np.mean(flow_errors)
@@ -48,8 +48,7 @@ def prediction_accuracy(
         if "cannot unpack non-iterable NoneType object" not in str(e):
             raise e
         print("Ran into Type Error: cannot unpack non-iterable NoneType object")
-        return 1
-
+        return 999
 
 
 def prediction_optimization(
@@ -58,7 +57,7 @@ def prediction_optimization(
         mask_true: np.ndarray,
 ) -> None:
     search_space = [
-        Integer(64, 128, name='niter'),
+        Integer(64, 160, name='niter'),
         Real(-5, 5, name='mask_threshold'),
         Integer(0, 32, name='diam_threshold'),
         Real(-4, 0, name='flow_threshold'),
@@ -111,7 +110,7 @@ def prediction_optimization(
         return score
 
     # Run Bayesian optimization
-    res_gp = gp_minimize(objective, search_space, n_calls=128, random_state=7)
+    res_gp = gp_minimize(objective, search_space, n_calls=32, random_state=0)
 
     # Results
     print("Best parameters: {}".format(res_gp.x))
@@ -152,7 +151,7 @@ def load_model(model_path: Path, **kwargs) -> models.CellposeModel:
 def run_flow_prediction(
         model: models.CellposeModel,
         image: np.ndarray,
-        ref_image: np.ndarray=None,
+        ref_image: np.ndarray = None,
         **kwargs,
 ):
     # If reference image (training data) is provided match histograms
