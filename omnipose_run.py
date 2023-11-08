@@ -70,35 +70,13 @@ def prediction_optimization(
         torch.cuda.empty_cache()
         mask, mask_settings = run_mask_prediction(
             flow,
-            bd=None,
-            p=None,
             niter=kwargs['niter'],
-            rescale=1.0,
-            resize=None,
             mask_threshold=kwargs['mask_threshold'],  # raise to recede boundaries
             diam_threshold=kwargs['diam_threshold'],
             flow_threshold=kwargs['flow_threshold'],
-            interp=True,
-            cluster=False,  # speed and less under-segmentation
-            boundary_seg=False,
-            affinity_seg=False,
-            do_3D=False,
             min_size=kwargs['min_size'],
-            max_size=None,
-            hole_size=None,
-            omni=True,
-            calc_trace=False,
-            verbose=True,
-            use_gpu=True,
-            device=model.device,
-            nclasses=2,
-            dim=3,
-            suppress=False,
-            eps=None,
-            hdbscan=False,
-            flow_factor=5,  # not needed with suppression off
-            debug=False,
-            override=False)
+            device=model.device
+        )
 
         dP = flow[1]
         score = prediction_accuracy(
@@ -171,7 +149,33 @@ def run_mask_prediction(flow, **kwargs):
     dist = flow[2]
 
     # ret is [masks_unpad, p, tr, bounds_unpad, augmented_affinity]
-    ret = omnipose.core.compute_masks(dP, dist, **kwargs)
+    ret = omnipose.core.compute_masks(
+        dP,
+        dist,
+        bd=None,
+        p=None,
+        rescale=1.0,
+        resize=None,
+        interp=True,
+        cluster=False,  # speed and less under-segmentation
+        boundary_seg=False,
+        affinity_seg=False,
+        do_3D=False,
+        max_size=None,
+        hole_size=None,
+        omni=True,
+        calc_trace=False,
+        verbose=True,
+        use_gpu=True,
+        nclasses=2,
+        dim=3,
+        suppress=False,
+        eps=None,
+        hdbscan=False,
+        flow_factor=5,  # not needed with suppression off
+        debug=False,
+        override=False,
+        **kwargs)
     mask = ret[0]
 
     return mask, kwargs
@@ -259,35 +263,13 @@ def main():
 
         mask, mask_settings = run_mask_prediction(
             flow,
-            bd=None,
-            p=None,
             niter=niter,
-            rescale=1.0,
-            resize=None,
             mask_threshold=mask_threshold,  # raise to recede boundaries
             diam_threshold=diam_threshold,
             flow_threshold=flow_threshold,
-            interp=True,
-            cluster=False,  # speed and less under-segmentation
-            boundary_seg=False,
-            affinity_seg=False,
-            do_3D=False,
             min_size=min_size,
-            max_size=None,
-            hole_size=None,
-            omni=True,
-            calc_trace=False,
-            verbose=True,
-            use_gpu=True,
             device=model.device,
-            nclasses=2,
-            dim=3,
-            suppress=False,
-            eps=None,
-            hdbscan=False,
-            flow_factor=5,  # not needed with suppression off
-            debug=False,
-            override=False)
+        )
 
         # Save masks
         _ = save_tiff(mask, image_path, dir_name=args.save_name)
