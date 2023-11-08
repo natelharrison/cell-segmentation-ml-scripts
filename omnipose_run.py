@@ -1,9 +1,7 @@
 import argparse
-import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Tuple
 
 import omnipose
 import torch
@@ -11,7 +9,6 @@ import tifffile
 import numpy as np
 from cellpose_omni import models, metrics
 from skimage import exposure
-
 from skopt import gp_minimize
 from skopt.utils import use_named_args
 from skopt.space import Real, Integer, Categorical
@@ -25,6 +22,9 @@ parser.add_argument('--reference_image', type=str, default=None)
 parser.add_argument('--mask', type=str, default=None)
 parser.add_argument('--model', type=str, default=None)
 parser.add_argument('--save_name', type=str, default=date_string)
+parser.add_argument('--mask_settings', type=float, default=None)
+parser.add_argument('--flows', type=str, default=None)
+parser.add_argument('--save_flows', action='store_true', default=False)
 args = parser.parse_args()
 
 
@@ -107,15 +107,16 @@ def save_tiff(
         tif_array: np.ndarray,
         tif_path: Path,
         dir_name: str,
+        data_type: str = 'masks'
 
 ) -> Path:
-    save_dir = tif_path.parent / f"{dir_name}_predicted_masks"
+    save_dir = tif_path.parent / f"{dir_name}_predicted_{data_type}"
     os.makedirs(save_dir.as_posix(), exist_ok=True)
 
-    save_name = f"{tif_path.name}_predicted_masks.tif"
+    save_name = f"{tif_path.name}_predicted_{data_type}.tif"
     save_path = save_dir / save_name
 
-    print(f"Saving mask to {save_path.as_posix()}")
+    print(f"Saving {data_type} to {save_path.as_posix()}")
     tifffile.imwrite(save_path, tif_array)
     return save_dir
 
@@ -140,8 +141,52 @@ def run_flow_prediction(
     img_min, img_max = np.percentile(image, (1, 99))
     image = exposure.rescale_intensity(image, in_range=(img_min, img_max))
 
-    masks, flows, _ = model.eval(image, **kwargs)
-    return masks, flows, kwargs
+    batch_size = 16
+    while True:
+        try:
+            _, flows, _ = model.eval(
+                image,
+                batch_size=batch_size,
+                compute_masks=True,
+                omni=True,
+                niter=1,
+                cluster=False,
+                verbose=True,
+                tile=True,
+                bsize=224,
+                channels=None,
+                rescale=None,
+                flow_factor=10,
+                normalize=True,
+                diameter=None,
+                augment=False,
+                mask_threshold=1,
+                net_avg=False,
+                suppress=False,
+                min_size=4000,
+                transparency=True,
+                flow_threshold=-5,
+                **kwargs)
+
+            return _, flows, _
+
+        except RuntimeError as e:
+            if ("out of memory" not in str(e)
+                    and "output.numel()" not in str(e)):
+                raise e
+
+            # Check if batch size already 1
+            if batch_size <= 1:
+                raise ValueError(
+                    "Out of memory error even with batch size of 1"
+                ) from e
+
+            # Reduce batch size and rerun
+            print(
+                f"Batch size of {batch_size} is too large.  "
+            )
+            batch_size = batch_size // 2
+            torch.cuda.empty_cache()
 
 
 def run_mask_prediction(flow, **kwargs):
@@ -194,85 +239,59 @@ def main():
     ref_image = None
     if args.reference_image is not None:
         ref_image, _ = load_tiff(args.reference_image)
-    print(ref_image)
 
     mask_true = None
     if args.mask is not None:
         mask_true, _ = load_tiff(args.mask)
 
-    # Run  flow predictions
-    batch_size = 8
-    while True:
-        try:
-            _, flow, _ = run_flow_prediction(
-                model,
-                image,
-                ref_image=ref_image,
-                batch_size=4,
-                compute_masks=True,
-                omni=True,
-                niter=1,
-                cluster=False,
-                verbose=True,
-                tile=True,
-                bsize=224,
-                channels=None,
-                rescale=None,
-                flow_factor=10,
-                normalize=True,
-                diameter=None,
-                augment=False,
-                mask_threshold=1,
-                net_avg=False,
-                suppress=False,
-                min_size=4000,
-                transparency=True,
-                flow_threshold=-5
-            )
-            break
+    flow = None
+    if args.flow is not None:
+        flow, _ = load_tiff(args.flows)
 
-        except RuntimeError as e:
-            if ("out of memory" not in str(e)
-                    and "output.numel()" not in str(e)):
-                raise e
+    else:
+        # Run  flow predictions
+        _, flow, _ = run_flow_prediction(
+            model,
+            image,
+            ref_image=ref_image,
+        )
 
-            # Check if batch size already 1
-            if batch_size <= 1:
-                raise ValueError(
-                    "Out of memory error even with batch size of 1"
-                ) from e
-
-            # Reduce batch size and rerun
-            print(
-                f"Batch size of {batch_size} is too large.  "
-            )
-            batch_size = batch_size // 2
-            torch.cuda.empty_cache()
+    if args.save_flow is not None:
+        multi_channel_flow_data = np.stack(flow, axis=0)
+        _ = save_tiff(multi_channel_flow_data, dir_name=args.save_name)
+        return
 
     # If ground truth provided, optimize parameters and print results
     if mask_true is not None:
         prediction_optimization(model, flow, mask_true)
+        return
 
-    else:
-        # Run mask predictions
-        niter = 30
-        mask_threshold = 2.0
-        diam_threshold = 32
-        flow_threshold = 0.0
-        min_size = 11000
+    # Run mask predictions
+    niter = 30
+    mask_threshold = 2.0
+    diam_threshold = 32
+    flow_threshold = 0.0
+    min_size = 11000
 
-        mask, mask_settings = run_mask_prediction(
-            flow,
-            niter=niter,
-            mask_threshold=mask_threshold,  # raise to recede boundaries
-            diam_threshold=diam_threshold,
-            flow_threshold=flow_threshold,
-            min_size=min_size,
-            device=model.device,
-        )
+    if args.mask_settings is not None:
+        (niter,
+         mask_threshold,
+         diam_threshold,
+         flow_threshold,
+         min_size) = args.mask_settings
 
-        # Save masks
-        _ = save_tiff(mask, image_path, dir_name=args.save_name)
+    mask, mask_settings = run_mask_prediction(
+        flow,
+        device=model.device,
+        niter=niter,
+        mask_threshold=mask_threshold,  # raise to recede boundaries
+        diam_threshold=diam_threshold,
+        flow_threshold=flow_threshold,
+        min_size=min_size,
+    )
+
+    # Save masks
+    _ = save_tiff(mask, image_path, dir_name=args.save_name)
 
 
 if __name__ == '__main__':
