@@ -54,9 +54,10 @@ def run_predictions(model, image, channels, **kwargs):
 
 
 def tile_image(image_path: Path):
-    image = imread(image_path.as_posix())
+    image = imread(image_path.as_posix()))
     overlap = None
     chunks = image.shape
+    print(chunks)
 
     if args.split is not None:
         chunks = (image.shape[0]//int(args.split), image.shape[1]//int(args.split), image.shape[2]//int(args.split))
