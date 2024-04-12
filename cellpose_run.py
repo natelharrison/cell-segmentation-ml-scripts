@@ -51,6 +51,7 @@ def run_predictions(model, image, channels, **kwargs):
 
     del image
     gc.collect()
+    print("Predictions Done")
     return mask
 
 
@@ -157,7 +158,9 @@ def main():
     channels = [[0, 0]]
     image = imread(image_path.as_posix())
 
+    print("Computing Masks")
     mask = run_predictions(model, image, channels, **kwargs)
+    print("Mask computed")
 
     imwrite(save_dir / image_name, mask)
 
