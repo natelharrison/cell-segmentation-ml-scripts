@@ -255,7 +255,7 @@ def main():
             mask_true, _ = load_tiff(args.mask)
 
         flow = None
-        if args.flow is not None:
+        if args.flows is not None:
             flow, _ = load_tiff(args.flows)
         else:
             # Run flow predictions
