@@ -106,6 +106,14 @@ def load_images(input_path
         raise ValueError(f"No valid image or directory found at {input_path}")
 
 
+def load_tiff(path_str: str) -> tuple[np.ndarray, Path]:
+    tif_path = Path(path_str)
+    tif_array = tifffile.imread(tif_path.as_posix())
+
+    print(f"Read tif with shape: {tif_array.shape}")
+    return tif_array, tif_path
+
+
 def save_tiff(
         tif_array: np.ndarray,
         tif_path: Path,
