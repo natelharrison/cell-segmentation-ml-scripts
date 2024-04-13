@@ -14,6 +14,7 @@ date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_folder', type=str, required=True)  # Ensure this is provided
 parser.add_argument('--save_name', type=str, default=date_string)
+parser.add_argument('--skip_images', type=int, default=0, help="Number of images to skip from the beginning")
 args = parser.parse_args()
 
 # Kwargs list for the cellpose model parameters (if needed)
@@ -53,8 +54,8 @@ def make_dir(dir_path: Path, remove_dir=True):
 def main():
     # Getting the image folder path
     image_folder = Path(args.image_folder)
-    # Fetching first 100 images
-    image_files = list(image_folder.glob('*'))[:100]  # Adjust the glob pattern as needed to match image types
+    # Fetching all images, skipping first 'n' images
+    image_files = list(image_folder.glob('*'))[args.skip_images:]  # Adjust the glob pattern as needed to match image types
 
     # Getting kwargs as string
     kwargs_str = json.dumps(kwargs_list[0])
@@ -68,7 +69,7 @@ def main():
     make_dir(script_batch_dir)
 
     # Looping over images and creating a script for each
-    for j, image_path in enumerate(image_files):
+    for j, image_path in enumerate(image_files, start=args.skip_images):
         log_path = script_batch_dir / f"log_{j}.log"
         formatted_batch_script = batch_script.format(
             log_path=log_path,
