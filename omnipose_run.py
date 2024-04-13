@@ -17,10 +17,10 @@ now = datetime.now()
 date_string = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--image', type=str, default=None)
+parser.add_argument('--input', type=str, required=True, help="Path to an image file or directory containing image files.")
 parser.add_argument('--reference_image', type=str, default=None)
 parser.add_argument('--mask', type=str, default=None)
-parser.add_argument('--model', type=str, default=None)
+parser.add_argument('--model', type=str, required=True)
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--mask_settings', type=float, default=None)
 parser.add_argument('--flows', type=str, default=None)
@@ -95,12 +95,15 @@ def prediction_optimization(
     print("Best score: {}".format(res_gp.fun))
 
 
-def load_tiff(path_str: str) -> tuple[np.ndarray, Path]:
-    tif_path = Path(path_str)
-    tif_array = tifffile.imread(tif_path.as_posix())
-
-    print(f"Read tif with shape: {tif_array.shape}")
-    return tif_array, tif_path
+def load_images(input_path
+) -> None:
+    path = Path(input_path)
+    if path.is_dir():
+        return [p for p in path.glob('*.tif')]
+    elif path.is_file():
+        return [path]
+    else:
+        raise ValueError(f"No valid image or directory found at {input_path}")
 
 
 def save_tiff(
@@ -227,71 +230,49 @@ def run_mask_prediction(flow, **kwargs):
 
 
 def main():
-    # Load model
     model_path = Path(args.model)
-    model = load_model(
-        model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True
-    )
+    model = load_model(model_path, dim=3, nchan=1, nclasses=2, diam_mean=0, gpu=True)
 
-    # Load image and ground truth mask if provided
-    image, image_path = load_tiff(args.image)
+    image_paths = load_images(args.input)
 
-    ref_image = None
-    if args.reference_image is not None:
-        ref_image, _ = load_tiff(args.reference_image)
+    for image_path in image_paths:
+        image, _ = load_tiff(image_path)
 
-    mask_true = None
-    if args.mask is not None:
-        mask_true, _ = load_tiff(args.mask)
+        ref_image = None
+        if args.reference_image is not None:
+            ref_image, _ = load_tiff(args.reference_image)
 
-    flow = None
-    if args.flow is not None:
-        flow, _ = load_tiff(args.flows)
+        mask_true = None
+        if args.mask is not None:
+            mask_true, _ = load_tiff(args.mask)
 
-    else:
-        # Run  flow predictions
-        _, flow, _ = run_flow_prediction(
-            model,
-            image,
-            ref_image=ref_image,
+        flow = None
+        if args.flow is not None:
+            flow, _ = load_tiff(args.flows)
+        else:
+            # Run flow predictions
+            _, flow, _ = run_flow_prediction(model, image, ref_image=ref_image)
+
+        if args.save_flows:
+            multi_channel_flow_data = np.stack(flow, axis=0)
+            _ = save_tiff(multi_channel_flow_data, image_path, args.save_name)
+            continue
+
+        if mask_true is not None:
+            prediction_optimization(model, flow, mask_true)
+            continue
+
+        mask, mask_settings = run_mask_prediction(
+            flow,
+            device=model.device,
+            niter=30,  # default settings
+            mask_threshold=2.0,
+            diam_threshold=32,
+            flow_threshold=0.0,
+            min_size=11000,
         )
 
-    if args.save_flow is not None:
-        multi_channel_flow_data = np.stack(flow, axis=0)
-        _ = save_tiff(multi_channel_flow_data, dir_name=args.save_name)
-        return
-
-    # If ground truth provided, optimize parameters and print results
-    if mask_true is not None:
-        prediction_optimization(model, flow, mask_true)
-        return
-
-    # Run mask predictions
-    niter = 30
-    mask_threshold = 2.0
-    diam_threshold = 32
-    flow_threshold = 0.0
-    min_size = 11000
-
-    if args.mask_settings is not None:
-        (niter,
-         mask_threshold,
-         diam_threshold,
-         flow_threshold,
-         min_size) = args.mask_settings
-
-    mask, mask_settings = run_mask_prediction(
-        flow,
-        device=model.device,
-        niter=niter,
-        mask_threshold=mask_threshold,  # raise to recede boundaries
-        diam_threshold=diam_threshold,
-        flow_threshold=flow_threshold,
-        min_size=min_size,
-    )
-
-    # Save masks
-    _ = save_tiff(mask, image_path, dir_name=args.save_name)
+        _ = save_tiff(mask, image_path, args.save_name)
 
 
 if __name__ == '__main__':
