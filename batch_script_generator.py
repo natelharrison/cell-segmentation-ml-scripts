@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 # Kwargs list for the cellpose model parameters (if needed)
 kwargs_list = [
-    {"diameter": 60, "do_3D": True, "min_size": 2000, "normalize": True}
+    {"diameter": 60, "do_3D": True, "normalize": True}
 ]
 
 # Model list (if you need to iterate over multiple models, else just use one)
@@ -34,7 +34,7 @@ batch_script = """#!/bin/sh
 #SBATCH --nodes=1
 #SBATCH --time=2:00:00
 #SBATCH --ntasks=8
-#SBATCH --mem=250G
+#SBATCH --mem=500G
 #SBATCH --output={log_path}
 #SBATCH --export=ALL
 
