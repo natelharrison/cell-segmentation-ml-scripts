@@ -32,6 +32,8 @@ parser.add_argument('--kwargs', type=str,
 parser.add_argument('--save_name', type=str, default=date_string)
 parser.add_argument('--batch_num', type=str, default=None)
 parser.add_argument('--split', type=str, default=None)
+parser.add_argument('--output_dir', type=str, default=None, help="Output directory for all saved images")
+
 
 args = parser.parse_args()
 
@@ -138,13 +140,13 @@ def main():
     image_name = image_path.name
 
     # File structuring
-    save_name = args.save_name
-    batch_num = args.batch_num
-    save_dir = image_path.parent / save_name
-    if batch_num is not None:
-        save_dir = save_dir / model_path.stem
-        image_name = f"{batch_num}_{image_name}"
-    os.makedirs(save_dir, exist_ok=True)
+    if args.output_dir:
+        save_dir = Path(args.output_dir)
+    else:
+        save_dir = image_path.parent / args.save_name
+        if args.batch_num:
+            save_dir = save_dir / model_path.stem
+            image_name = f"{args.batch_num}_{image_name}"
 
     # Kwargs handling
     try:
