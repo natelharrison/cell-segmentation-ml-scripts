@@ -36,7 +36,7 @@ batch_script = """#!/bin/sh
 . {user_dir}/anaconda3/etc/profile.d/conda.sh
 conda activate cellpose
 
-python cellpose_run.py --image_path {image_path} --model {model_path} --output_dir {output_dir} {denoise_option}"""
+python cellpose_run.py --image {image_path} --model {model_path} --output_dir {output_dir} {denoise_option}"""
 
 def make_dir(dir_path: Path, remove_dir=True):
     if dir_path.exists() and remove_dir:
