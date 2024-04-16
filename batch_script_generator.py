@@ -23,7 +23,8 @@ kwargs_list = [
 ]
 
 # Model list (if you need to iterate over multiple models, else just use one)
-model_path_str = "/global/home/users/natelharrison/cellpose_residual_on_style_on_concatenation_off_128_64_overlap_2023_08_03_01_23_59.133837"
+# model_path_str = "/global/home/users/natelharrison/cellpose_residual_on_style_on_concatenation_off_128_64_overlap_2023_08_03_01_23_59.133837"
+model_path_str = 'cyto3_restore'
 model_path = Path(model_path_str)
 
 # The batch script that will be written to each .sh file
