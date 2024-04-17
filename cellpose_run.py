@@ -43,8 +43,8 @@ def load_model(model_identifier: str, gpu: bool = True, denoise_flag: bool = Fal
 
 def run_predictions(model, image, channels):
     mask = None
-    if args.denosie:
-        mask, _, _ = model.eval(
+    if isinstance(model, denoise.CellposeDenoiseModel):
+        mask, _, _, _ = model.eval(
             image,
             channels=channels,
             batch_size=256,
