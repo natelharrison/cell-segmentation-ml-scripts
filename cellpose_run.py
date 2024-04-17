@@ -48,7 +48,7 @@ def run_predictions(model, image, channels):
     if isinstance(model, denoise.CellposeDenoiseModel):
         mask, _, _, image = model.eval(
             image,
-            channels=channels,
+            channels=None,
             batch_size=256,
 
             diameter = 30,
