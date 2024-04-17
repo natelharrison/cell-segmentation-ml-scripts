@@ -47,11 +47,10 @@ def run_predictions(model, image, channels):
         channels=channels,
         batch_size=256,
 
-        diameter = 60,
+        diameter = None,
         do_3D = True,
         min_size = 2000,
         normalize = True,
-        cellprob_threshold = -0.1
     )
 
     print("Predictions Done")
