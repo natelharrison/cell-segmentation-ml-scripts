@@ -71,6 +71,7 @@ def main():
     # File structuring
     output_dir_name = args.output_dir if args.output_dir is not None else date_string
     output_dir = image_directory / output_dir_name
+    os.makedirs(output_dir, exist_ok=True)
 
     channels = [[0, 0]]
     image = imread(image_path.as_posix())
