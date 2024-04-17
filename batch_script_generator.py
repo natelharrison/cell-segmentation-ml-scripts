@@ -24,12 +24,12 @@ args = parser.parse_args()
 batch_script = """#!/bin/sh
 #SBATCH --qos=abc_normal
 #SBATCH --gres=gpu:1
-#SBATCH --partition=dgx
+#SBATCH --partition=abc_a100
 #SBATCH --account=co_abc
 #SBATCH --nodes=1
 #SBATCH --time=2:00:00
-#SBATCH --ntasks=8
-#SBATCH --mem=500G
+#SBATCH --ntasks=4
+#SBATCH --mem=125G
 #SBATCH --output={log_path}
 #SBATCH --export=ALL
 
