@@ -25,14 +25,22 @@ logging.basicConfig(level=logging.INFO)
 
 
 # model_type='cyto' or 'nuclei' or 'cyto2'
-def load_model(model_path: Path, gpu: bool = True) -> models.CellposeModel:
-    return models.CellposeModel(gpu=gpu, pretrained_model=model_path.as_posix())
+def load_model(model_identifier: str, gpu: bool = True, denoise_flag: bool = False):
+    if denoise_flag:
+        if Path(model_identifier).is_file():
+            return denoise.CellposeDenoiseModel(
+                gpu=gpu, pretrained_model=model_identifier, restore_type="denoise_cyto3"
+            )
+        else:
+            return denoise.CellposeDenoiseModel(
+                gpu=gpu, model_type=model_identifier, restore_type="denoise_cyto3"
+            )
+    else:
+        if Path(model_identifier).is_file():
+            return models.CellposeModel(gpu=gpu, pretrained_model=model_identifier)
+        else:
+            return models.CellposeModel(gpu=gpu, model_type=model_identifier)
 
-
-def load_denoise_model(model_path: Path,gpu: bool = True) -> models.CellposeModel:
-    return denoise.CellposeDenoiseModel(
-        gpu=gpu, pretrained_model=model_path.as_posix(), restore_type="denoise_cyto3"
-    )
 
 def run_predictions(model, image, channels):
     mask, _, _ = model.eval(
@@ -53,8 +61,7 @@ def run_predictions(model, image, channels):
 
 def main():
     # Load model
-    model_path = Path(args.model)
-    model = load_model(model_path)
+    model = load_model(model_identifier=args.model, denoise_flag=args.denoise)
 
     # Load image info (currently will only support single images)
     image_path = Path(args.image)
