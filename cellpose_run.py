@@ -10,6 +10,8 @@ from datetime import datetime
 from cellpose.io import imread
 from cellpose import models, denoise
 
+import numpy as np
+
 now = datetime.now()
 date_string = f'cellpose_{now.strftime("%Y-%m-%d_%H-%M-%S")}'
 
@@ -91,6 +93,8 @@ def main():
 
     channels = [[0, 0]]
     image = imread(image_path.as_posix())
+
+    print(f'{image_name} has shape {np.shape(image)}')
 
     print("Computing Masks")
     mask = run_predictions(model, image, channels)
