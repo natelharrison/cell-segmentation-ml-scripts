@@ -42,16 +42,33 @@ def load_model(model_identifier: str, gpu: bool = True, denoise_flag: bool = Fal
 
 
 def run_predictions(model, image, channels):
-    mask, _, _ = model.eval(
-        image,
-        channels=channels,
-        batch_size=256,
+    mask = None
+    if isinstance(model, denoise.CellposeDenoiseModel):
+        mask, _, _ = model.eval(
+            image,
+            channels=channels,
+            batch_size=256,
 
-        diameter = None,
-        do_3D = True,
-        min_size = 2000,
-        normalize = True,
-    )
+            diameter = None,
+            do_3D = True,
+            min_size = 2000,
+            normalize = True,
+        )
+
+        print("Predictions Done")
+        return mask
+
+    if isinstance(model, models.CellposeModel):
+        mask, _, _ = model.eval(
+            image,
+            channels=channels,
+            batch_size=256,
+
+            diameter = None,
+            do_3D = True,
+            min_size = 2000,
+            normalize = True,
+        )
 
     print("Predictions Done")
     return mask
