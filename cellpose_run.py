@@ -14,11 +14,10 @@ now = datetime.now()
 date_string = f'cellpose_{now.strftime("%Y-%m-%d_%H-%M-%S")}'
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--image', type=str, default='')
-parser.add_argument('--model', type=str, default=None)
-parser.add_argument('--denoise', action='store_true', default=False)
-parser.add_argument('--pretrained', type=str, default=None)
-parser.add_argument('--output_dir', type=str, default=date_string, help="Changes default output dir")
+parser.add_argument('--image', type=str, required=True, help="Path to the image file.")
+parser.add_argument('--model', type=str, required=True, help="Model type or path to a pretrained model.")
+parser.add_argument('--denoise', action='store_true', help="Use a denoising model if specified.")
+parser.add_argument('--output_dir', type=str, default=None, help="Changes default output dir. Defaults to image location.")
 
 args = parser.parse_args()
 logging.basicConfig(level=logging.INFO)
@@ -66,10 +65,12 @@ def main():
     # Load image info (currently will only support single images)
     image_path = Path(args.image)
     image_name = image_path.name
+    image_directory = image_path.parent
+
 
     # File structuring
-    output_dir = Path(args.output_dir)
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir_name = args.output_dir if args.output_dir is not None else date_string
+    output_dir = image_directory / output_dir_name
 
     channels = [[0, 0]]
     image = imread(image_path.as_posix())
