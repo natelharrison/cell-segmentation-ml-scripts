@@ -98,7 +98,8 @@ def main():
         denoise_model = load_denoise_model()
         denoised_image = denoise_model.eval([image], channels=channels, diameter=50.)
         imwrite(output_dir / f'denoised_{image_name}', denoised_image)
-        print("Denoised image saved to", output_dir / f'denoised_{image_name}')
+        print(f'Denoised image has shape {np.shape(denoised_image)}')
+
 
     else:
         model = load_model(model_identifier=args.model, denoise_flag=False)
