@@ -96,7 +96,7 @@ def main():
 
     if args.denoise:
         denoise_model = load_denoise_model()
-        denoised_image = denoise_model.eval(image, channels=channels, diameter=50.)
+        denoised_image = denoise_model.eval([image], channels=channels, diameter=50.)
         imwrite(output_dir / f'denoised_{image_name}', denoised_image)
         print("Denoised image saved to", output_dir / f'denoised_{image_name}')
 
