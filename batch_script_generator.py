@@ -46,7 +46,8 @@ def make_dir(dir_path: Path, remove_dir=True):
 def main():
     image_folder = Path(args.image_folder)
     all_image_files = list(image_folder.glob('*.tif'))  # assuming TIFF format
-    image_files = all_image_files[args.start_image:args.end_image + 1] if args.end_image is not None else all_image_files[args.start_image:]
+    image_files = all_image_files[
+        args.start_image:args.end_image + 1] if args.end_image is not None else all_image_files[args.start_image:]
 
     user_dir = Path.home()
     script_batch_dir = user_dir / 'cellpose_run' / args.output_dir

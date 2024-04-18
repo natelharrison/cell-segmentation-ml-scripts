@@ -25,6 +25,10 @@ args = parser.parse_args()
 logging.basicConfig(level=logging.INFO)
 
 
+def load_denoise_model(gpu: bool = True):
+    return denoise.DenoiseModel(model_type="denoise_cyto3", gpu=gpu)
+
+
 # model_type='cyto' or 'nuclei' or 'cyto2'
 def load_model(model_identifier: str, gpu: bool = True, denoise_flag: bool = False):
     if denoise_flag:
@@ -76,14 +80,10 @@ def run_predictions(model, image, channels):
 
 
 def main():
-    # Load model
-    model = load_model(model_identifier=args.model, denoise_flag=args.denoise)
-
     # Load image info (currently will only support single images)
     image_path = Path(args.image)
     image_name = image_path.name
     image_directory = image_path.parent
-
 
     # File structuring
     output_dir_name = args.output_dir if args.output_dir is not None else date_string
@@ -92,14 +92,19 @@ def main():
 
     channels = [[0, 0]]
     image = imread(image_path.as_posix())
-
     print(f'{image_name} has shape {np.shape(image)}')
 
-    print("Computing Masks")
-    mask = run_predictions(model, image, channels)
-    print("Mask computed")
+    if args.denoise:
+        denoise_model = load_denoise_model()
+        denoised_image = denoise_model.apply(image)
+        imwrite(output_dir / f'denoised_{image_name}', denoised_image)
+        print("Denoised image saved to", output_dir / f'denoised_{image_name}')
 
-    imwrite(output_dir / f'mask_{image_name}', mask)
+    else:
+        model = load_model(model_identifier=args.model, denoise_flag=False)
+        mask = run_predictions(model, image, channels)
+        imwrite(output_dir / f'mask_{image_name}', mask)
+        print("Masks saved to", output_dir / f'mask_{image_name}')
 
 
 if __name__ == '__main__':
