@@ -31,6 +31,7 @@ def load_denoise_model(gpu: bool = True):
 
 # model_type='cyto' or 'nuclei' or 'cyto2'
 def load_model(model_identifier: str, gpu: bool = True, denoise_flag: bool = False):
+    # If denoise_flag is true, then run a CellposeDenoiseModel
     if denoise_flag:
         if Path(model_identifier).is_file():
             return denoise.CellposeDenoiseModel(
@@ -49,6 +50,7 @@ def load_model(model_identifier: str, gpu: bool = True, denoise_flag: bool = Fal
 
 def run_predictions(model, image, channels):
     mask = None
+    # Run CellposeDenoiseModel
     if isinstance(model, denoise.CellposeDenoiseModel):
         mask, _, _, image = model.eval(
             image,
@@ -60,9 +62,9 @@ def run_predictions(model, image, channels):
         )
 
         print("Predictions Done")
-        imwrite('/global/home/users/natelharrison/cellpose_run/denoise_cyto3/test2.tif', image)
         return mask
 
+    # Run CellposeModel
     if isinstance(model, models.CellposeModel):
         mask, _, _ = model.eval(
             image,
@@ -75,8 +77,8 @@ def run_predictions(model, image, channels):
             normalize = True,
         )
 
-    print("Predictions Done")
-    return mask
+        print("Predictions Done")
+        return mask
 
 
 def main():
@@ -85,22 +87,24 @@ def main():
     image_name = image_path.name
     image_directory = image_path.parent
 
-    # File structuring
+    # Output directory structuring
     output_dir_name = args.output_dir if args.output_dir is not None else date_string
     output_dir = image_directory / output_dir_name
     os.makedirs(output_dir, exist_ok=True)
 
+    # Load image and set channels
     channels = [[0, 0]]
     image = imread(image_path.as_posix())
     print(f'{image_name} has shape {np.shape(image)}')
 
+    # If --denoise flag used, denoise and save image
     if args.denoise:
         denoise_model = load_denoise_model()
         denoised_image = denoise_model.eval([image], channels=channels, diameter=50.)
         imwrite(output_dir / f'denoised_{image_name}', denoised_image)
         print(f'Denoised image has shape {np.shape(denoised_image)}')
 
-
+    # Run mask predictions and save image
     else:
         model = load_model(model_identifier=args.model, denoise_flag=False)
         mask = run_predictions(model, image, channels)
